@@ -19,6 +19,10 @@ void child_process(int serviceSockfd){
     int n = 6;
     write(serviceSockfd, &n, sizeof(n));
     printf("[server] le serveur dit : %d\n",n);
+
+    buffer;
+    read(serviceSockfd,&buffer,sizeof(buffer));
+    printf("[server] le client dit : %d\n",buffer);
 }
 
 void handler_child_death(){
@@ -27,11 +31,14 @@ void handler_child_death(){
 }
 
 void server_tcp(int port){ 
+    printf("[server] le serveur s'ouvre sur le port %d\n",port);
+
     struct sigaction ac;
     ac.sa_handler = handler_child_death;
     ac.sa_flags = SA_RESTART;
     printf("[server] le serveur est en marche\n");
     sigaction(SIGCHLD,&ac, NULL);
+
 
     // create tcp socket with precised port
     int listenSockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -76,7 +83,7 @@ void server_tcp(int port){
         else if(pid == 0) {
             // child process
             close(listenSockfd);
-            
+
             child_process(serviceSockfd);
 
             // close connection
@@ -95,6 +102,7 @@ void server_tcp(int port){
 
 // client_tcp function
 void client_tcp(char * hostname, int port) {
+    printf("[client] le client se connecte au serveur %s sur le port %d\n",hostname,port);
     // create tcp socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -140,25 +148,28 @@ void client_tcp(char * hostname, int port) {
     close(sockfd);
 }
 
-
-int main(int argc, char *argv[])
-{
-    if (argc != 2)
-    {
-        printf("Usage: %s <server/client>\n", argv[0]);
-        exit(1);
-    }
+//Main that call server_tcp or client_tcp function depending on the argument given in the command line
+int main(int argc, char *argv[]){
     if (strcmp(argv[1], "server") == 0)
     {
-        server_tcp(25565);
+        if(argc != 3) {
+            printf("Usage: %s server port\n", argv[0]);
+            exit(1);
+        }
+        server_tcp(6555);
     }
     else if (strcmp(argv[1], "client") == 0)
     {
-        client_tcp("localhost",25565);
+        if(argc != 4) {
+            printf("Usage: %s client hostname port\n", argv[0]);
+            exit(1);
+        }
+        
+        client_tcp(argv[2],6555);
     }
     else
     {
-        printf("Usage: %s <server/client>\n", argv[0]);
+        printf("Usage: %s <server/client> <adresse> <port>\n", argv[0]);
         exit(1);
     }
     return 0;

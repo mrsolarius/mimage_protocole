@@ -27,11 +27,11 @@ void child_process(int serviceSockfd){
 
 void handler_child_death(){
     wait(NULL);
-    printf("JE MEURS !!!!;\n");
+    printf("[server] le socket applicatif et mort\n");
 }
 
-void server_tcp(int port){ 
-    printf("[server] le serveur s'ouvre sur le port %d\n",port);
+void server_tcp(long port){
+    printf("[server] le serveur s'ouvre sur le port %ld\n",port);
 
     struct sigaction ac;
     ac.sa_handler = handler_child_death;
@@ -101,8 +101,8 @@ void server_tcp(int port){
 
 
 // client_tcp function
-void client_tcp(char * hostname, int port) {
-    printf("[client] le client se connecte au serveur %s sur le port %d\n",hostname,port);
+void client_tcp(char * hostname, long port) {
+    printf("[client] le client se connecte au serveur %s sur le port %ld\n",hostname,port);
     // create tcp socket
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -150,26 +150,43 @@ void client_tcp(char * hostname, int port) {
 
 //Main that call server_tcp or client_tcp function depending on the argument given in the command line
 int main(int argc, char *argv[]){
+    long *port = malloc(sizeof(long));
+    if(argc!=3 && argc!=4){
+        printf("Usage : %s server <port>\n",argv[0]);
+        printf("Usage : %s client <hostname> <port>\n",argv[0]);
+        exit(1);
+    }
     if (strcmp(argv[1], "server") == 0)
     {
-        if(argc != 3) {
-            printf("Usage: %s server port\n", argv[0]);
+        if(argc!=3){
+            printf("Usage : %s server <port>\n",argv[0]);
             exit(1);
         }
-        server_tcp(6555);
+        *port = strtol(argv[2],NULL,10);
+        if(*port<1 || *port>65535){
+            printf("Le port doit être compris entre 1 et 65535\n");
+            printf("Usage : %s server <port>\n",argv[0]);
+            exit(1);
+        }
+        server_tcp(port);
     }
     else if (strcmp(argv[1], "client") == 0)
     {
-        if(argc != 4) {
-            printf("Usage: %s client hostname port\n", argv[0]);
+        if(argc!=4){
+            printf("Usage : %s client <hostname> <port>\n",argv[0]);
             exit(1);
         }
-        
-        client_tcp(argv[2],6555);
+        *port = strtol(argv[3],NULL,10);
+        if(*port<1 || *port>65535){
+            printf("Le port doit être compris entre 1 et 65535\n");
+            printf("Usage : %s client <adresse> <port>\n",argv[0]);
+            exit(1);
+        }
+        client_tcp(argv[2],*port);
     }
     else
     {
-        printf("Usage: %s <server/client> <adresse> <port>\n", argv[0]);
+        printf("Usage : %s <server/client> <adresse> <port>\n", argv[0]);
         exit(1);
     }
     return 0;

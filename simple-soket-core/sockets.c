@@ -168,7 +168,7 @@ int main(int argc, char *argv[]){
             printf("Usage : %s server <port>\n",argv[0]);
             exit(1);
         }
-        server_tcp(port);
+        server_tcp(*port);
     }
     else if (strcmp(argv[1], "client") == 0)
     {

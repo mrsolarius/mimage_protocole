@@ -2,32 +2,35 @@
 #include <stdio.h>
 #include <unistd.h> 
 #include <stdlib.h>
+#include <string.h>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <sys/wait.h>
 
-
-void child_process(int serviceSockfd){
+//Make while loop that close when they want
+void child_process(int serviceSockfd){   
     int buffer;
     read(serviceSockfd,&buffer,sizeof(buffer));
     printf("[server] le client dit : %d\n",buffer);
 
     int n = 6;
-    write(serviceSockfd, n, sizeof(n));
+    write(serviceSockfd, &n, sizeof(n));
     printf("[server] le serveur dit : %d\n",n);
 }
 
 void handler_child_death(){
     wait(NULL);
+    printf("JE MEURS !!!!;\n");
 }
 
 void server_tcp(int port){ 
     struct sigaction ac;
     ac.sa_handler = handler_child_death;
     ac.sa_flags = SA_RESTART;
-
+    printf("[server] le serveur est en marche\n");
     sigaction(SIGCHLD,&ac, NULL);
 
     // create tcp socket with precised port
@@ -36,28 +39,29 @@ void server_tcp(int port){
         perror("ERROR opening socket");
         exit(1);
     }
-
+    printf("[server] socket created\n");
     // define soc structure
-    struct sockaddr_in * serv_addr;
-    serv_addr->sin_family = AF_INET;
-    serv_addr->sin_addr.s_addr = htons(INADDR_ANY);
-    serv_addr->sin_port = htons(port);
-    
+    struct sockaddr_in  serv_addr;
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = htons(INADDR_ANY);
+    serv_addr.sin_port = htons(port);
     // bind socket to server address
-    if (bind(listenSockfd, serv_addr, sizeof(serv_addr)) < 0) {
+    if (bind(listenSockfd, (struct sockaddr *) &serv_addr, sizeof(struct sockaddr)) < 0) {
         perror("ERROR on binding");
         exit(1);
     }
-
+    printf("[server] socket binded\n");
     // listen for incoming connections
     listen(listenSockfd, 5); 
+    printf("[server] socket listen\n");
 
-    struct sockaddr_in cli_addr;
-
-    while (0)
+    struct sockaddr_in * cli_addr;
+    while (1)
     {
+        printf("[server] waiting for incoming connection\n");
         // accept connection
-        int serviceSockfd = accept(listenSockfd, (struct sockaddr *) &cli_addr, sizeof(cli_addr));
+        int size;
+        int serviceSockfd = accept(listenSockfd, (struct sockaddr *) cli_addr, &size);
         if (serviceSockfd < 0) {
             perror("ERROR on accept");
             exit(1);
@@ -92,14 +96,14 @@ void server_tcp(int port){
 // client_tcp function
 void client_tcp(char * hostname, int port) {
     // create tcp socket
-    int sockfd = socket(AF_INET, SOCK_STREAM, 1);
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
         perror("ERROR opening socket");
         exit(1);
     }
     // get server address from hostname
-    struct hostent *server;
-    struct sockaddr_in serv_addr;
+    struct hostent * server;
+    struct sockaddr_in * serv_addr;
 
     server = gethostbyname(hostname);
     if (server == NULL) {
@@ -107,8 +111,33 @@ void client_tcp(char * hostname, int port) {
         exit(0);
     }
 
-    
+    serv_addr->sin_family = AF_INET;
+    memcpy(&serv_addr->sin_addr.s_addr,server->h_addr,sizeof(server->h_addr));
+    serv_addr->sin_port = htons(port);
+    // connect to server
+    int conn = connect(sockfd, (struct sockaddr *) serv_addr, sizeof(struct sockaddr));
+    if (conn < 0) {
+        perror("ERROR connecting");
+        exit(1);
+    }
 
+    // send message to server
+    int n = 5;
+    write(sockfd, &n, sizeof(n));
+    printf("[client] le client dit : %d\n",n);
+
+    sleep(20);
+
+    n = 4;
+    write(sockfd, &n, sizeof(n));
+    printf("[client] le client dit : %d\n",n);
+    // read message from server
+    int buffer;
+    read(sockfd,&buffer,sizeof(buffer));
+    printf("[client] le serveur dit : %d\n",buffer);
+
+    // close connection
+    close(sockfd);
 }
 
 
@@ -121,11 +150,11 @@ int main(int argc, char *argv[])
     }
     if (strcmp(argv[1], "server") == 0)
     {
-        server_tcp(8080);
+        server_tcp(25565);
     }
     else if (strcmp(argv[1], "client") == 0)
     {
-        client_tcp("localhost",8080);
+        client_tcp("localhost",25565);
     }
     else
     {

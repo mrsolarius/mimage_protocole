@@ -27,18 +27,18 @@ void printTitle(char *title) {
 }
 
 void passTest(char *testFunction, char *msg, bool res) {
-    //afiche si le test est passé et incrémente le nombre de tests validés
+    //afiche si le tests est passé et incrémente le nombre de tests validés
     totalTest++;
     printf(COLOR_BLUE"%s : %s\n"COLOR_RESET, testFunction, msg);
     if (res) {
-        printf(COLOR_GREEN"\t✔️ test passed\n"COLOR_RESET);
+        printf(COLOR_GREEN"\t✔️ tests passed\n"COLOR_RESET);
         testPassed++;
     } else {
-        printf(COLOR_RED"\t❌ test failure\n"COLOR_RESET);
+        printf(COLOR_RED"\t❌ tests failure\n"COLOR_RESET);
     }
 }
 
 void resume() {
     //on affiche le nombre de tests validés et échoués
-    printf(COLOR_YELLOW"\n%d test réussi sur %d (%d/%d)\n"COLOR_RESET, testPassed, totalTest, testPassed, totalTest);
+    printf(COLOR_YELLOW"\n%d tests réussi sur %d (%d/%d)\n"COLOR_RESET, testPassed, totalTest, testPassed, totalTest);
 }

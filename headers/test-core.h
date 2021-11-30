@@ -25,9 +25,9 @@ void print_hex(const unsigned char *s);
 void printTitle(char *title);
 
 /**
- * Fonction permettant de passer un test
- * @param title titre du test
- * @param test fonction de test
+ * Fonction permettant de passer un tests
+ * @param title titre du tests
+ * @param test fonction de tests
  * @param res valeur attendue
  */
 void passTest(char *testFunction, char *msg, bool res);

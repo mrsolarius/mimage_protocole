@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[])
 {
-    //test du core de test
+    //tests du core de tests
     testCore();
     //affichage du résumé des tests
     resume();

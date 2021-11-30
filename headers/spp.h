@@ -100,17 +100,17 @@ typedef InfosTrame * PInfoTrame;
 *    WRONG_SIZE=6,
 */
 
-char* encodeInfosTrame(PInforTame);
+char* encodeInfosTrame(PInfoTrame);
 
 /**
-*   Nom: decodeInfosTrame - Décode le header de la trame et renvoie la structure de la trame.
+*   Nom: decodeInfosTrame - Décode le headers de la trame et renvoie la structure de la trame.
 *   Description :
 *       Récupère les informations contenus dans la tête de la structure et les décode dans le format de la structure pour une utilisation ultérieure.
 *       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
 *       Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
-*      @param char* data corresponds au header de la trame.
+*      @param char* data corresponds au headers de la trame.
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
@@ -126,24 +126,24 @@ PInfoTrame decodeInfosTrame(char* infos, unsigned int size);
 *       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
 *       Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
-*      @param char* data corresponds au header de la trame.
+*      @param char* data corresponds au headers de la trame.
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
 *       WRONG_SIZE=6
 */
-bool checkInfoTrameError(PInforTame);
+bool checkInfoTrameError(PInfoTrame);
 
 /*-----------------------------------------FIN_INFOS_TRAME---------------------------------------------*/
 
 /*-----------------------------------------DATA_TRAME---------------------------------------------*/
-typedef struct dataTrame{
+typedef struct _DataTrame{
     unsigned char cmd;
     unsigned char status;
     unsigned long sizeData;
     int dataFd;
-};
-
+} DataTrame;
+typedef DataTrame * PDataTrame;
 /**
   * Nom :
  *      encodeDataHead - encode la structure dataTrame en binaire.
@@ -165,22 +165,22 @@ typedef struct dataTrame{
         FD_ERROR=4,
         EMPTY_SIZE_DATA=5,
  **/
-char* encodeDataHead(struct dataTrame);
+char* encodeDataHead(PDataTrame);
 
 /**
-*   Nom: decodeDataHead - Décode le header de la trame et renvoie une data trame contenant les informations récoltées.
+*   Nom: decodeDataHead - Décode le headers de la trame et renvoie une data trame contenant les informations récoltées.
 *   Description :
 *       Récupère les informations contenus dans la tête de la structure et les décode dans le format de la structure pour une utilisation ultérieure.
 *       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *       Si cmd est vide, alors le programme renvoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
 *
-*      @param char* data corresponds au header de la trame.
+*      @param char* data corresponds au headers de la trame.
 *       EMPTY_CMD=0,
 *       CMD_ERROR=1,
 *       EMPTY_STATUS=2,
 */
-struct dataTrame decodeDataHead(char * data);
+PDataTrame decodeDataHead(char * data);
 
 /*-----------------------------------------FIN_DATA_TRAME---------------------------------------------*/
 

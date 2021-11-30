@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <../header/spp.h>
 #include <stdbool.h>
+#include "spp.h"
+
+SPP_Erno=-1;
 
 bool checkInfoTrameError(PInfoTrame infosTrame){
     bool test=false;
-    if ((infosTrame->cmd==NULL)){
+    if (infosTrame->cmd==0){
         SPP_Erno=EMPTY_CMD;
         test=true;
     }
@@ -14,7 +16,7 @@ bool checkInfoTrameError(PInfoTrame infosTrame){
         SPP_Erno=CMD_ERROR;
         test=true;
     }
-    if ((infosTrame->status==NULL)){
+    if (infosTrame->status==0){
         SPP_Erno=EMPTY_STATUS;
         test=true;
     }
@@ -28,7 +30,7 @@ bool checkInfoTrameError(PInfoTrame infosTrame){
 char* encodeInfosTrame(PInfoTrame infosTrame){
     // on check tous les problèmes potentiel pouvant subevenir
     if (checkInfoTrameError(infosTrame)==true){
-        return (0xFF);
+        return (char *) (0xFF);
     }
     //on met en place la structure de la trame après l'avoir déclarée
     char * trame= malloc(sizeof(char)*4+strlen(infosTrame->infos));

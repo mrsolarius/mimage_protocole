@@ -5,12 +5,15 @@ int totalTest = 0;
 
 void print_hex(const unsigned char *s)
 {
+    //tant que le pointeur n'est pas à la fin de la chaine
     while(*s)
+        //on affiche l'octet en hexa
         printf("%02x-", (unsigned int) *s++);
     printf("\n");
 }
 
 void printTitle(char *title) {
+    //on encadre le titre de tiret grace à la taille du string
     unsigned int size = strlen(title);
     printf(COLOR_BLUE"\n+");
     for (int i = 0; i < size + 4; i++) {
@@ -24,6 +27,7 @@ void printTitle(char *title) {
 }
 
 void passTest(char *testFunction, char *msg, bool res) {
+    //afiche si il le test et passer et incrémente le nombre de test validé
     totalTest++;
     printf(COLOR_BLUE"%s : %s\n"COLOR_RESET, testFunction, msg);
     if (res) {
@@ -35,5 +39,6 @@ void passTest(char *testFunction, char *msg, bool res) {
 }
 
 void resume() {
+    //on affiche le nombre de test validé et échoué
     printf(COLOR_YELLOW"\n%d test réussi sur %d (%d/%d)\n"COLOR_RESET, testPassed, totalTest, testPassed, totalTest);
 }

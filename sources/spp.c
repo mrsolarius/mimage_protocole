@@ -4,7 +4,10 @@
 #include <stdbool.h>
 #include "spp.h"
 
-SPP_Erno=-1;
+int SPP_Erno=-1;
+const char *DDP_errList[] = {
+    //@todo: add error messages
+};
 
 bool checkInfoTrameError(PInfoTrame infosTrame){
     bool test=false;

@@ -39,9 +39,9 @@ Client                  Serveur
 * `SHOW_FILE`: Message de type `SHOW_FILE` envoyé au client.
   * `CMD` : Commande indiquant le but de la requête.
     * Ici, 0xA2 
-  * `SIZE` : Longeur de la chaine de caracther.
+  * `SIZE_NAME` : Longeur de la chaine de caracther.
     * Ici, Integer 
-  * `DATA` : Chaine de caracther.
+  * `NAME` : Chaine de caracther.
     * Ici, Char*  
 
 ## Déposer un fichier sur le server

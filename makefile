@@ -30,8 +30,9 @@ TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
 SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
 OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
 
-SRC_TEST := $(foreach x, $(filter-out $(SRC_PATH)/$(MAIN_FILE).c, $(SRC)), $(wildcard $(addprefix $(x)/*,.c*)) $(foreach x, $(TEST_PATH), $(wildcard $(addprefix $(x)/*,.c*))))
-OBJ_TEST := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC_TEST))))) $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(filter-out $(SRC_PATH)/$(MAIN_FILE).c, $(SRC))))))
+ALL_SRC := $(wildcard $(SRC_PATH)/*.c)
+SRC_TEST := $(foreach x, $(filter-out $(SRC_PATH)/$(MAIN_FILE).c, $(ALL_SRC)), $(wildcard $(addprefix $(x)/*,.c*))) $(foreach x, $(TEST_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
+OBJ_TEST := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC_TEST))))) $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(filter-out $(SRC_PATH)/$(MAIN_FILE).c, $(ALL_SRC))))))
 
 OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
 

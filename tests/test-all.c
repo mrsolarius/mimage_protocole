@@ -1,6 +1,5 @@
-#include <test-core.h>
-#include <all-test.h>
-#include <type.h>
+#include "test-core.h"
+#include "all-test.h"
 
 int main(int argc, char *argv[])
 {

@@ -39,6 +39,7 @@ extern const char * SPP_DATA_TRAME_List[];
  *      @param msg correspond a message précédent l'erreur
  * 
  * Erreur :
+ * 
  */
 void SPP_perror(char * msg);
 
@@ -63,6 +64,13 @@ typedef struct dataTrame{
  *      Si dataTrame a un sizeData inexistant, alors il envoie un message d'erreur 5 de type sizeDataVide.
  * Paramètre :
  *      @param struct dataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci).
+
+        dataTrameVide=0,
+        cmdVide=1,
+        cmdErreur=2,
+        statusVide=3,
+        statusErreur=4,
+        sizeDataVide=5
  **/
 char* encodeDataHead(struct dataTrame);
 
@@ -74,6 +82,10 @@ char* encodeDataHead(struct dataTrame);
 *       Si la valeur status ne correspond pas à la liste de valeur possible, alors  il envoie un messase d'erreur 4 de type statusErreur.
 *       Si la valeur sizeData ne correspond pas à la longeur de data dans la trame, alors il envoie une message d'erreur 6 de type sizeDataTaille.
 *
+*      @param char* data corresponds au header de la trame.
+*       cmdErreur=2,
+*       statusErreur=4,
+*       sizeDataTaille=6
 */
 struct dataTrame decodeDataHead(char * data);
 

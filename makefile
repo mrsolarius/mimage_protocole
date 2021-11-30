@@ -1,43 +1,79 @@
-OBJS	= obj/sockets.o
-SOURCE	= sources/simple-soket-core/sockets.c
-INC_DIR = ./header
-HEADER	= 
-OUT	= bin/sockets
-CC	 = gcc
-FLAGS	 = -g -c -Wall
-LFLAGS	 = -I. -I$(INC_DIR)
+# Makefile sous licence MIT crée par TheNetAdmin et modifier par notre groupe de projet
+# URL : https://github.com/TheNetAdmin/Makefile-Templates
 
-OBJS_TEST	= obj/test-core.o obj/test-testCore.o obj/test-all.o
-SOURCE_TEST	= sources/test/test-all.c sources/test/test-core.c sources/test/test-testCore.c
-HEADER_TEST	= header/all-test.h header/test-core.h
-OUT_TEST	= bin/test
+# path macros
+BIN_PATH := bin
+OBJ_PATH := obj
+SRC_PATH := sources
+TEST_PATH := tests
+DBG_PATH := debug
+HDR_PATH := headers
 
-all: $(OBJS)
-	$(CC) -g $(OBJS) -o $(OUT) $(LFLAGS)
+# tool macros
+CC ?= gcc
+CCFLAGS := -Wall
+DBGFLAGS := -g
+CCOBJFLAGS := $(CCFLAGS) -c -I./$(HDR_PATH)
 
-obj/sockets.o: sources/simple-soket-core/sockets.c
-	mkdir -p obj bin
-	$(CC) $(FLAGS) sources/simple-soket-core/sockets.c -o obj/sockets.o
+# compile macros
+TARGET_NAME := test-all
+TARGET := $(BIN_PATH)/$(TARGET_NAME)
+TARGET_TEST := $(BIN_PATH)/$(TARGET_NAME)
+TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
 
+# src files & obj files
+SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*))) $(foreach x, $(TEST_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
+OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC))))) $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(TEST)))))
+OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
 
+# clean files list
+DISTCLEAN_LIST := $(OBJ) \
+				  $(OBJ_TEST) \
+                  $(OBJ_DEBUG)
+CLEAN_LIST := $(TARGET) \
+			  $(TARGET_DEBUG) \
+			  $(TARGET_TEST) \
+			  $(DISTCLEAN_LIST)
+
+# default rule
+default: makedir all
+
+# non-phony targets
+$(TARGET): $(OBJ)
+	$(CC) $(CCFLAGS) -o $@ $(OBJ)
+
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
+	$(CC) $(CCOBJFLAGS) -o $@ $<
+
+$(OBJ_PATH)/%.o: $(TEST_PATH)/%.c*
+	$(CC) $(CCOBJFLAGS) -o $@ $<
+
+$(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
+	$(CC) $(CCOBJFLAGS) $(DBGFLAGS) -o $@ $<
+
+$(TARGET_DEBUG): $(OBJ_DEBUG)
+	$(CC) $(CCFLAGS) $(DBGFLAGS) $(OBJ_DEBUG) -o $@
+
+# phony rules
+.PHONY: makedir
+makedir:
+	@mkdir -p $(BIN_PATH) $(OBJ_PATH) $(DBG_PATH)
+
+.PHONY: all
+all: $(TARGET)
+
+.PHONY: test
+test: $(TARGET_TEST)
+
+.PHONY: debug
+debug: $(TARGET_DEBUG)
+
+.PHONY: clean
 clean:
-	rm -f $(OBJS) $(OUT)
+	@echo CLEAN $(CLEAN_LIST)
+	@rm -f $(CLEAN_LIST)
 
-
-test: $(OBJS_TEST)
-	$(CC) -g $(OBJS_TEST) -o $(OUT_TEST)
-
-obj/test-core.o: sources/test/test-core.c header/test-core.h
-	mkdir -p obj bin
-	$(CC) $(FLAGS) sources/test/test-core.c -o obj/test-core.o $(LFLAGS)
-
-obj/test-testCore.o: sources/test/test-testCore.c header/test-core.h 
-	mkdir -p obj bin
-	$(CC) $(FLAGS) sources/test/test-testCore.c -o obj/test-testCore.o $(LFLAGS)
-
-obj/test-all.o: sources/test/test-all.c header/all-test.h
-	mkdir -p obj bin
-	$(CC) $(FLAGS) sources/test/test-all.c -o obj/test-all.o $(LFLAGS)
-
-clean_test:
-	rm -f $(OBJS_TEST) $(OUT_TEST)
+.PHONY: distclean
+distclean:
+	@echo CLEAN $(DISTCLEAN_LIST)
+	@rm -f $(DISTCLEAN_LIST)

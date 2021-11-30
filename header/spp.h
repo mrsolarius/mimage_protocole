@@ -7,16 +7,47 @@
 extern int SPP_DATA_TRAME_Erno;
 
 /**
- * Enum de toutes les erreur
+ * Enum de toutes les erreurs
  */
 enum SPP_DATA_TRAME_errCode{
-    dataTrameVide=0,
-    cmdVide=1,
-    cmdErreur=2,
-    statusVide=3,
-    statusErreur=4,
-    sizeDataVide=5,
-    sizeDataTaille=6
+    EMPTY_CMD=0,
+    CMD_ERROR=1,
+    EMPTY_STATUS=2,
+    EMPTY_FD=3,
+    FD_ERROR=4,
+    EMPTY_SIZE_DATA=5,
+    WRONG_SIZE=6
+};
+
+/**
+ * Enum de toutes les commandes
+ */
+enum COMMANDES {
+    LIST_SIZE=0xA1, 
+    DOWNLOAD_FILE_NAME=0xA2, 
+    ACQUIT_FILE_NAME=0xA3,
+    ACQUIT_FILE_DATA=0xA4,
+    DOWNLOAD_FILE_DATA=0xAD,
+    GET_LIST=0xC1,
+    UPLOAD_FILE_NAME=0xC2,
+    GET_FILE_DATA=0xC3,
+    UPLOAD_FILE_DATA=0xCD
+};
+
+/**
+ * Enum de tous les status
+ */
+enum STATUS{
+    SUCCESS =0x20, 
+    INVALID_NAME_FILE= 0x41,
+    INVALID_EXTEND_FILE= 0x42, 
+    NAME_ALREADY_TAKEN = 0x43,
+    NO_FOUND_FILE= 0x44,
+    CHECKSUM_ERROR= 0x45,
+    INTERNAL_ERROR= 0x50,
+    LACK_OF_SPACE= 0x51,
+    FILE_TOO_LARGE= 0x52
+    
 };
 
 
@@ -42,8 +73,52 @@ extern const char * SPP_DATA_TRAME_List[];
  * 
  */
 void SPP_perror(char * msg);
+/*-----------------------------------------INFOS_TRAME---------------------------------------------*/
+typedef struct infosTrame{
+    unsigned char cmd;
+    unsigned char status;
+    unsigned char nbFiles;
+    unsigned char sizeInfos;
+    char* infos;
+};
 
+/**
+*   Nom: encodeInfosTrame - encode la structure encodeInfosTrame en binaire envoyé.
+*   Description :
+*      Récupère les informations contenus dans la structure InfosTrame et les encode dans le format de la trame pour une utilisation ultérieure.
+*      Si infosTrame a un cmd inexistant, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
+*      Si infosTrame a un cmd ne corresponds pas à liste de commande,alors il envoie un message d'erreur 1 de type CMD_ERROR.
+*      Si infosTrame a un status inexistant, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
+*      Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.
+*
+*      @param struct infosTrame 
+*    EMPTY_CMD=0,
+*    CMD_ERROR=1,
+*    EMPTY_STATUS=2,
+*    WRONG_SIZE=6,
+*/
 
+char* encodeInfosTrame(struct infosTrame);
+
+/**
+*   Nom: decodeInfosTrame - Décode le header de la trame et renvoie la structure de la trame.
+*   Description :
+*       Récupère les informations contenus dans la tête de la structure et les décode dans le format de la structure pour une utilisation ultérieure.
+*       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
+*       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
+*       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
+*       Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
+*      @param char* data corresponds au header de la trame.
+*       CMD_ERROR=1,
+*       EMPTY_CMD=0,
+*       EMPTY_STATUS=2,
+*       WRONG_SIZE=6
+*/
+struct infosTrame decodeInfosTrame(char* infos, unsigned int size);
+
+/*-----------------------------------------FIN_INFOS_TRAME---------------------------------------------*/
+
+/*-----------------------------------------DATA_TRAME---------------------------------------------*/
 typedef struct dataTrame{
     unsigned char cmd;
     unsigned char status;
@@ -55,44 +130,40 @@ typedef struct dataTrame{
   * Nom :
  *      encodeDataHead - encode la structure dataTrame en binaire.
  * Description :
- *      Récupère les éléments de la structure et les réorganise selon la structure de la dataTrame préalablement définie.
- *      Si dataTrame est vide alors il envoie un message d'erreur 0 de type dataTrameVide.
- *      Si dataTrame a un cmd inexistant, alors il envoie un message d'erreur 1 de type cmdVide.
- *      Si dataTrame a un cmd ne corresponds pas à liste de commande,alors il envoie un message d'erreur 2 de type cmdErreur.
- *      Si dataTrame a un status inexistant, alors il envoie un message d'erreur 3 de type statusVide.
- *      Si dataTrame a un status ne corresponds pas à liste de commande,alors il envoie un message d'erreur 4 de type statusErreur.
- *      Si dataTrame a un sizeData inexistant, alors il envoie un message d'erreur 5 de type sizeDataVide.
- * Paramètre :
+ *      Récupère les éléments de la tête de la structure et les réorganise selon la structure de la dataTrame préalablement définie.
+ *      Si dataTrame a un cmd inexistant, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
+ *      Si dataTrame a un cmd ne corresponds pas à liste de commande,alors il envoie un message d'erreur 1 de type CMD_ERROR.
+ *      Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
+ *      Si dataFd est vide, alors le programme renvoie une message d'erreur 3 de type EMPTY_FD.
+ *      Si dataFd ne corresponds pas à liste de commande, alors il envoie un message d'erreur 4 de type FD_ERROR.
+ *      Si sizeData est nul, alors  le programme renvoie une message d'erreur 5 de type EMPTY_SIZE_DATA.
+ *  Paramètre :
  *      @param struct dataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci).
 
-        dataTrameVide=0,
-        cmdVide=1,
-        cmdErreur=2,
-        statusVide=3,
-        statusErreur=4,
-        sizeDataVide=5
+        EMPTY_CMD=0,
+        CMD_ERROR=1,
+        EMPTY_STATUS=2,
+        EMPTY_FD=3
+        FD_ERROR=4,
+        EMPTY_SIZE_DATA=5,
  **/
 char* encodeDataHead(struct dataTrame);
 
 /**
 *   Nom: decodeDataHead - Décode le header de la trame et renvoie une data trame contenant les informations récoltées.
 *   Description :
-*       Récupère les informations contenus dans la tête de la structure et les encode dans le format de la structure pour une utilisation ultérieure.
-*       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 2 de type cmdErreur.
-*       Si la valeur status ne correspond pas à la liste de valeur possible, alors  il envoie un messase d'erreur 4 de type statusErreur.
-*       Si la valeur sizeData ne correspond pas à la longeur de data dans la trame, alors il envoie une message d'erreur 6 de type sizeDataTaille.
+*       Récupère les informations contenus dans la tête de la structure et les décode dans le format de la structure pour une utilisation ultérieure.
+*       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
+*       Si cmd est vide, alors le programme renvoie un message d'erreur 0 de type EMPTY_CMD.
+*       Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
 *
 *      @param char* data corresponds au header de la trame.
-*       cmdErreur=2,
-*       statusErreur=4,
-*       sizeDataTaille=6
+*       EMPTY_CMD=0,
+*       CMD_ERROR=1,
+*       EMPTY_STATUS=2,
 */
 struct dataTrame decodeDataHead(char * data);
 
-
-
-
-
-
+/*-----------------------------------------FIN_DATA_TRAME---------------------------------------------*/
 
 #endif //data_trame.h

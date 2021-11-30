@@ -74,14 +74,15 @@ extern const char * SPP_DATA_TRAME_List[];
  */
 void SPP_perror(char * msg);
 /*-----------------------------------------INFOS_TRAME---------------------------------------------*/
-typedef struct infosTrame{
+typedef struct _InfosTrame{
     unsigned char cmd;
     unsigned char status;
     unsigned char nbFiles;
     unsigned char sizeInfos;
     char* infos;
-};
+} InfosTrame;
 
+typedef InfosTrame *PInfosTrame;
 /**
 *   Nom: encodeInfosTrame - encode la structure encodeInfosTrame en binaire envoyé.
 *   Description :
@@ -98,7 +99,7 @@ typedef struct infosTrame{
 *    WRONG_SIZE=6,
 */
 
-char* encodeInfosTrame(struct infosTrame);
+char* encodeInfosTrame(PInfosTrame);
 
 /**
 *   Nom: decodeInfosTrame - Décode le header de la trame et renvoie la structure de la trame.
@@ -119,12 +120,14 @@ struct infosTrame decodeInfosTrame(char* infos, unsigned int size);
 /*-----------------------------------------FIN_INFOS_TRAME---------------------------------------------*/
 
 /*-----------------------------------------DATA_TRAME---------------------------------------------*/
-typedef struct dataTrame{
+typedef struct _DataTrame{
     unsigned char cmd;
     unsigned char status;
     unsigned long sizeData;
     int dataFd;
-};
+} DataTrame;
+
+typedef DataTrame *PDataTrame;
 
 /**
   * Nom :
@@ -147,7 +150,7 @@ typedef struct dataTrame{
         FD_ERROR=4,
         EMPTY_SIZE_DATA=5,
  **/
-char* encodeDataHead(struct dataTrame);
+char* encodeDataHead(PDataTrame);
 
 /**
 *   Nom: decodeDataHead - Décode le header de la trame et renvoie une data trame contenant les informations récoltées.

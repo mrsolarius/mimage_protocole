@@ -1,5 +1,6 @@
 #include <test-core.h>
 #include <all-test.h>
+#include <type.h>
 
 int main(int argc, char *argv[])
 {
@@ -7,5 +8,7 @@ int main(int argc, char *argv[])
     testCore();
     //affichage du résumé des tests
     resume();
+    //getType
+    testType();
     return 0;
 }

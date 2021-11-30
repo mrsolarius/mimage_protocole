@@ -19,13 +19,13 @@
 void print_hex(const unsigned char *s);
 
 /**
- * Fonction permetant d'ecrire un titre dans la console
- * @param title titre a ecrire
+ * Fonction permettant d'ecrire un titre dans la console
+ * @param title titre à ecrire
  */
 void printTitle(char *title);
 
 /**
- * Fonction permetant de passer un test
+ * Fonction permettant de passer un test
  * @param title titre du test
  * @param test fonction de test
  * @param res valeur attendue

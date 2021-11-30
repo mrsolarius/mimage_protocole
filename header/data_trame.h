@@ -44,15 +44,17 @@ extern const char * SPP_DATA_TRAME_List[];
 void SPP_perror(char * msg);
 
 
-typedef struct dataTrame{
+typedef struct _DataTrame{
     unsigned char cmd;
     unsigned char status;
     unsigned long sizeData;
     int dataFd;
-};
+} DataTrame;
+
+typedef DataTrame *PDataTrame;
 
 /**
-  * Nom :
+ * Nom :
  *      encodeDataHead - encode la structure dataTrame en binaire.
  * Description :
  *      Récupère les éléments de la structure et les réorganise selon la structure de la dataTrame préalablement définie.
@@ -64,15 +66,16 @@ typedef struct dataTrame{
  *      Si dataTrame a un sizeData inexistant, alors il envoie un message d'erreur 5 de type sizeDataVide.
  * Paramètre :
  *      @param struct dataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci).
-
-        dataTrameVide=0,
-        cmdVide=1,
-        cmdErreur=2,
-        statusVide=3,
-        statusErreur=4,
-        sizeDataVide=5
- **/
-char* encodeDataHead(struct dataTrame);
+ *
+ *      dataTrameVide=0,
+ *      cmdVide=1,
+ *      cmdErreur=2,
+ *      statusVide=3,
+ *      sizeDataVide=5
+ *      fdError=4,
+ *      fdVide=4
+ */
+char* encodeDataHead(PDataTrame);
 
 /**
 *   Nom: decodeDataHead - Décode le header de la trame et renvoie une data trame contenant les informations récoltées.

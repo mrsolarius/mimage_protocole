@@ -4,10 +4,14 @@
 # path macros
 BIN_PATH := bin
 OBJ_PATH := obj
+#OBJ_PATH := obj_test
 SRC_PATH := sources
+MAIN_FILE := sockets
 TEST_PATH := tests
 DBG_PATH := debug
 HDR_PATH := headers
+
+SRC_PATH_EXCEPT_MAIN := $(SRC_PATH)/!($(MAIN_FILE))
 
 # tool macros
 CC ?= gcc
@@ -16,14 +20,19 @@ DBGFLAGS := -g
 CCOBJFLAGS := $(CCFLAGS) -c -I./$(HDR_PATH)
 
 # compile macros
-TARGET_NAME := test-all
+TARGET_NAME := Mimage
+TARGET_TEST := RunTest
 TARGET := $(BIN_PATH)/$(TARGET_NAME)
-TARGET_TEST := $(BIN_PATH)/$(TARGET_NAME)
+TARGET_TEST := $(BIN_PATH)/$(TARGET_TEST)
 TARGET_DEBUG := $(DBG_PATH)/$(TARGET_NAME)
 
 # src files & obj files
-SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*))) $(foreach x, $(TEST_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
-OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC))))) $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(TEST)))))
+SRC := $(foreach x, $(SRC_PATH), $(wildcard $(addprefix $(x)/*,.c*)))
+OBJ := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
+
+SRC_TEST := $(foreach x, $(filter-out $(SRC_PATH)/$(MAIN_FILE).c, $(SRC)), $(wildcard $(addprefix $(x)/*,.c*)) $(foreach x, $(TEST_PATH), $(wildcard $(addprefix $(x)/*,.c*))))
+OBJ_TEST := $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC_TEST))))) $(addprefix $(OBJ_PATH)/, $(addsuffix .o, $(notdir $(basename $(filter-out $(SRC_PATH)/$(MAIN_FILE).c, $(SRC))))))
+
 OBJ_DEBUG := $(addprefix $(DBG_PATH)/, $(addsuffix .o, $(notdir $(basename $(SRC)))))
 
 # clean files list
@@ -42,10 +51,16 @@ default: makedir all
 $(TARGET): $(OBJ)
 	$(CC) $(CCFLAGS) -o $@ $(OBJ)
 
+$(TARGET_TEST): $(OBJ_TEST)
+	$(CC) $(CCFLAGS) -o $@ $(OBJ_TEST)
+
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CC) $(CCOBJFLAGS) -o $@ $<
 
 $(OBJ_PATH)/%.o: $(TEST_PATH)/%.c*
+	$(CC) $(CCOBJFLAGS) -o $@ $<
+
+$(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	$(CC) $(CCOBJFLAGS) -o $@ $<
 
 $(DBG_PATH)/%.o: $(SRC_PATH)/%.c*
@@ -63,7 +78,10 @@ makedir:
 all: $(TARGET)
 
 .PHONY: test
-test: $(TARGET_TEST)
+test: makedir build-test
+
+.PHYNONY: build-test
+build-test: $(TARGET_TEST)
 
 .PHONY: debug
 debug: $(TARGET_DEBUG)

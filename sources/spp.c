@@ -42,7 +42,7 @@ bool checkDataTrameError(PDataTrame dataTrame){
         SPP_Erno=EMPTY_CMD;
         test=true;
     }else
-    if (!((dataTrame->cmd==DOWNLOAD_FILE_NAME)||(dataTrame->cmd==UPLOAD_FILE_DATA))){
+    if (!((dataTrame->cmd==DOWNLOAD_FILE_DATA)||(dataTrame->cmd==UPLOAD_FILE_DATA))){
         SPP_Erno=CMD_ERROR;
         test=true;
     }else

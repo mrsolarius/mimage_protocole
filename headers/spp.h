@@ -166,15 +166,9 @@ typedef DataTrame * PDataTrame;
  *      Si sizeData est nul, alors  le programme renvoie une message d'erreur 5 de type EMPTY_SIZE_DATA.
  *  Paramètre :
  *      @param struct dataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci).
-
-        EMPTY_CMD=0,
-        CMD_ERROR=1,
-        EMPTY_STATUS=2,
-*       STATUS_ERROR=7,
-        EMPTY_FD=3
-        FD_ERROR=4,
-        EMPTY_SIZE_DATA=5,
-        STATUS_ERROR=7
+ *      CorrectFrame
+ *      CorrectFrameWithStatusError
+ *      ThrowError
  **/
 unsigned char* encodeDataHead(PDataTrame);
 
@@ -188,11 +182,11 @@ unsigned char* encodeDataHead(PDataTrame);
 *       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
 *
 *      @param char* data corresponds au headers de la trame.
-*       EMPTY_CMD=0,
-*       CMD_ERROR=1,
-*       EMPTY_STATUS=2,
-*       STATUS_ERROR=7,
-*       STATUS_ERROR=7
+*       CmdERORR
+*       EMPTY_STATUSError
+*       PassWithData
+*       PassWithError
+*       
 */
 PDataTrame decodeDataHead(char * data, int dataFd);
 
@@ -208,14 +202,17 @@ PDataTrame decodeDataHead(char * data, int dataFd);
 *       Si dataTrame a une dataFd inférieur à 0, alors il envoie un message d'erreur 4 de type FD_ERROR.
 *       Si dataTrame a un sizeData de 0 et que le status est SUCESS, alors il envoie un message d'erreur 5 de type EMPTY_SIZE_DATA.
 *      @param char* data corresponds au headers de la trame.
+*       
+*       EMPTY_CMD=0,
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
 *       STATUS_ERROR=7,
 *       EMPTY_FD=3,
-*       FD_ERROR=4,
 *       EMPTY_SIZE_DATA=5
-*       
+*       FD_ERROR=4,
+*       WithDATA()
+*       WithError
 */
 bool checkDataTrameError(PDataTrame dataTrame);
 

@@ -6,79 +6,87 @@
 /*----------------Début de test de la fonction checkDataTrameError----------*/
 bool checkDataTrameError_ShouldReturnEMPTY_CMD(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->status = SUCCESS;
     data->sizeData = 256;
     data->dataFd = 1;
-    return (SPP_Erno == EMPTY_CMD) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == EMPTY_CMD) && (res == true);
 }
 
 bool checkDataTrameError_ShouldReturnCMD_ERROR(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=ACQUIT_FILE_DATA;
     data->status = SUCCESS;
     data->sizeData = 256;
     data->dataFd = 1;
-    return (SPP_Erno == CMD_ERROR) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == CMD_ERROR) && (res == true);
     
 }
 
 bool checkDataTrameError_ShouldReturnEMPTY_STATUS(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=UPLOAD_FILE_DATA;
     data->sizeData = 256;
     data->dataFd = 1;
-    return (SPP_Erno == EMPTY_STATUS) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == EMPTY_STATUS) && (res == true);
 }
 
 bool checkDataTrameError_ShouldReturnSTATUS_ERROR(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=UPLOAD_FILE_DATA;
     data->status = 0xFE;
     data->sizeData = 256;
     data->dataFd = 1;
-    return (SPP_Erno == STATUS_ERROR) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == STATUS_ERROR) && (res == true);
 }
 
 bool checkDataTrameError_ShouldReturnEMPTY_FD(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=UPLOAD_FILE_DATA;
     data->status = SUCCESS;
     data->sizeData = 256;
-    return (SPP_Erno == EMPTY_FD) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == EMPTY_FD) && (res == true);
 }
 
 bool checkDataTrameError_ShouldReturnEMPTY_SIZE_DATA(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=UPLOAD_FILE_DATA;
     data->status = SUCCESS;
     data->dataFd = 1;
-    return (SPP_Erno == STATUS_ERROR) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == STATUS_ERROR) && (res == true);
 }
 
 bool checkDataTrameError_ShouldPassWithDATA(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=UPLOAD_FILE_DATA;
     data->status = SUCCESS;
     data->sizeData = 256;
     data->dataFd = 1;
-    return (SPP_Erno == STATUS_ERROR) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == STATUS_ERROR) && (res == true);
 }
 
 bool checkDataTrameError_ShouldPassWithError(){
     SPP_Erno=-1;
-    PDataTrame data;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd=UPLOAD_FILE_DATA;
     data->status = NO_FOUND_FILE;
     data->sizeData = 0;
     data->dataFd = 1;
-    return (SPP_Erno == STATUS_ERROR) && (checkDataTrameError(data) == true);
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == STATUS_ERROR) && (res == true);
     
 }
 /*----------------Debut Test de la fonction encodeDataHead-----------------*/
@@ -156,7 +164,7 @@ bool encodeDataHead_itShouldReturnCorrectFrame(){
     unsigned char* dataTrame = encodeDataHead(data);
     printf("%x",dataTrame[0]);
     free(data);
-    return true; (
+    return (
         (dataTrame[0]==DOWNLOAD_FILE_DATA)&&
         (dataTrame[1]==SUCCESS)&&
         (dataTrame[2]==0b10001010)&&
@@ -340,6 +348,14 @@ bool decodeInfosTrame_itShouldReturnWRONGSIZEError(){
 //Fonction d'appel principal de SPP
 void testSPP(){
     printTitle("Test de la classe SPP");
+    printTitle("Test de la fonction checkDataTrameError");
+    passTest("checkDataTrameError","it should return EMPTY_CMD",checkDataTrameError_ShouldReturnEMPTY_CMD());
+    passTest("checkDataTrameError","it should return CMD_ERROR",checkDataTrameError_ShouldReturnCMD_ERROR());
+    passTest("checkDataTrameError","it should return EMPTY_STATUS",checkDataTrameError_ShouldReturnEMPTY_STATUS());
+    passTest("checkDataTrameError","it should return STATUS_ERROR",checkDataTrameError_ShouldReturnSTATUS_ERROR());
+    passTest("checkDataTrameError","it should return EMPTY_SIZE_DATA",checkDataTrameError_ShouldReturnEMPTY_SIZE_DATA());
+    passTest("checkDataTrameError","it should pass test with data_size",checkDataTrameError_ShouldPassWithDATA());
+    passTest("checkDataTrameError","it should pass test without data_size",checkDataTrameError_ShouldPassWithError());
 
     printTitle("Test de la fonction encodeDataHead");
     /*passTest("encodeDataHead","it should return cmd empty error",encodeDataHead_itShouldReturnCmdEMPTYCMDError());

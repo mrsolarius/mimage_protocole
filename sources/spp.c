@@ -41,29 +41,29 @@ bool checkDataTrameError(PDataTrame dataTrame){
     if (dataTrame->cmd==0){
         SPP_Erno=EMPTY_CMD;
         test=true;
-    }
-    if ((dataTrame->cmd!=DOWNLOAD_FILE_NAME)||(dataTrame->cmd!=UPLOAD_FILE_DATA)){
+    }else
+    if (!((dataTrame->cmd==DOWNLOAD_FILE_NAME)||(dataTrame->cmd==UPLOAD_FILE_DATA))){
         SPP_Erno=CMD_ERROR;
         test=true;
-    }
+    }else
     if (dataTrame->status==0){
         SPP_Erno=EMPTY_STATUS;
         test=true;
-    }
+    }else
     if ((dataTrame->status!=SUCCESS)||
         !((dataTrame->status>=0x41)&&(dataTrame->status<=0x45))||
         !((dataTrame->status>=0x50)&&(dataTrame->status<=0x52))){
         SPP_Erno=STATUS_ERROR;
         test=true;
-        }
+    }else
     if (dataTrame->dataFd==0){
         SPP_Erno=EMPTY_FD;
         test=true;
-    }
+    }else
     if (dataTrame->dataFd<0){
         SPP_Erno=FD_ERROR;
         test=true;
-    }
+    }else
     if ((dataTrame->status==SUCCESS)&&(dataTrame->sizeData==0)){
         SPP_Erno=EMPTY_SIZE_DATA;
         test=true;

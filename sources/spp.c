@@ -32,6 +32,14 @@ bool checkInfoTrameError(PInfoTrame infosTrame){
         SPP_Erno=STATUS_ERROR;
         test=true;
     }else
+    if (infosTrame->infos == NULL)
+    {
+        if (infosTrame->sizeInfos != 0)
+        {
+            SPP_Erno=WRONG_SIZE;
+            test=true;
+        }  
+    }else
     if ((infosTrame->sizeInfos) != (strlen(infosTrame->infos))){
         SPP_Erno=WRONG_SIZE;
         test=true;
@@ -80,19 +88,26 @@ bool checkDataTrameError(PDataTrame dataTrame){
     return test;
 }
 
-char* encodeInfosTrame(PInfoTrame infosTrame){
+unsigned char* encodeInfosTrame(PInfoTrame infosTrame){
+    unsigned char *error = malloc(sizeof(unsigned char));
     // on check tous les problèmes potentiel pouvant subevenir
     if (checkInfoTrameError(infosTrame)==true){
-        return (char *) (0xFF);
+        error[0]=0xff;
+        return error;
     }
     //on met en place la structure de la trame après l'avoir déclarée
-    char * trame= malloc(sizeof(char)*4+strlen(infosTrame->infos));
+    unsigned char * trame;
+    if(infosTrame->sizeInfos>0){
+        trame = malloc(sizeof(char)*4 + strlen(infosTrame->infos)+1);
+    }else{
+        trame = malloc(sizeof(char)*4);
+    }
     trame[0]=infosTrame->cmd;
     trame[1]=infosTrame->status;
     trame[2]=infosTrame->nbFiles;
     trame[3]=infosTrame->sizeInfos;
-    for (int comp=0;comp<infosTrame->sizeInfos;comp++){
-        trame[comp+4]=infosTrame->infos[comp];
+    for (int comp=0; comp < (infosTrame->sizeInfos); comp++){
+        trame[comp+4] = infosTrame->infos[comp];
     }
     return trame;
 }
@@ -111,7 +126,7 @@ PInfoTrame decodeInfosTrame(char* infos, unsigned int size){
 }
 
 unsigned char* encodeDataHead(PDataTrame dataTrame){
-     unsigned char *error = malloc(sizeof(unsigned char));
+    unsigned char *error = malloc(sizeof(unsigned char));
     // on check tous les problèmes potentiel pouvant subevenir
     if (checkDataTrameError(dataTrame)==true){
         error[0]=0xff;

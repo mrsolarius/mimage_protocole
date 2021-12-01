@@ -103,7 +103,7 @@ typedef InfosTrame * PInfoTrame;
 *    WRONG_SIZE=6,
 */
 
-char* encodeInfosTrame(PInfoTrame);
+unsigned char* encodeInfosTrame(PInfoTrame);
 
 /**
 *   Nom: decodeInfosTrame - Décode le headers de la trame et renvoie la structure de la trame.

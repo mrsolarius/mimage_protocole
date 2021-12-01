@@ -92,12 +92,14 @@ typedef InfosTrame * PInfoTrame;
 *      Si infosTrame a un cmd inexistant, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *      Si infosTrame a un cmd ne corresponds pas à liste de commande,alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *      Si infosTrame a un status inexistant, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
+*      Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
 *      Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.
 *
 *      @param struct infosTrame 
 *    EMPTY_CMD=0,
 *    CMD_ERROR=1,
 *    EMPTY_STATUS=2,
+*    STATUS_ERROR=7,
 *    WRONG_SIZE=6,
 */
 
@@ -116,6 +118,7 @@ char* encodeInfosTrame(PInfoTrame);
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
+*       STATUS_ERROR=7,
 *       WRONG_SIZE=6,
 *       STATUS_ERROR=7
 */
@@ -134,6 +137,7 @@ PInfoTrame decodeInfosTrame(char* infos, unsigned int size);
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
+*       STATUS_ERROR=7,
 *       WRONG_SIZE=6
 */
 bool checkInfoTrameError(PInfoTrame);
@@ -166,6 +170,7 @@ typedef DataTrame * PDataTrame;
         EMPTY_CMD=0,
         CMD_ERROR=1,
         EMPTY_STATUS=2,
+*       STATUS_ERROR=7,
         EMPTY_FD=3
         FD_ERROR=4,
         EMPTY_SIZE_DATA=5,
@@ -186,9 +191,33 @@ char* encodeDataHead(PDataTrame);
 *       EMPTY_CMD=0,
 *       CMD_ERROR=1,
 *       EMPTY_STATUS=2,
+*       STATUS_ERROR=7,
 *       STATUS_ERROR=7
 */
 PDataTrame decodeDataHead(char * data, int dataFd);
+
+/**
+*   Nom: checkDataTrameError - Test les erreurs potentiels de la trame datatrame et positionne SPP_ERNO.
+*   Description :
+*       Test la cohérences des valeurs et renvoie une booléen indiquent si une valeur ne l'est pas.
+*       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
+*       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
+*       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
+*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
+*       Si dataTrame a un dataFd nul, alors il envoie un message d'erreur 3 de type EMPTY_FD.
+*       Si dataTrame a une dataFd inférieur à 0, alors il envoie un message d'erreur 4 de type FD_ERROR.
+*       Si dataTrame a un sizeData de 0 et que le status est SUCESS, alors il envoie un message d'erreur 5 de type EMPTY_SIZE_DATA.
+*      @param char* data corresponds au headers de la trame.
+*       CMD_ERROR=1,
+*       EMPTY_CMD=0,
+*       EMPTY_STATUS=2,
+*       STATUS_ERROR=7,
+*       EMPTY_FD=3,
+*       FD_ERROR=4,
+*       EMPTY_SIZE_DATA=5
+*       
+*/
+bool checkDataTrameError(PDataTrame dataTrame);
 
 /*-----------------------------------------FIN_DATA_TRAME---------------------------------------------*/
 

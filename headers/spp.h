@@ -176,7 +176,7 @@ typedef DataTrame * PDataTrame;
         EMPTY_SIZE_DATA=5,
         STATUS_ERROR=7
  **/
-char* encodeDataHead(PDataTrame);
+unsigned char* encodeDataHead(PDataTrame);
 
 /**
 *   Nom: decodeDataHead - Décode le headers de la trame et renvoie une data trame contenant les informations récoltées.

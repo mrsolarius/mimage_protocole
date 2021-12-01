@@ -3,6 +3,7 @@
 * consulter la liste des fichier disponibles
 * déposer un fichier sur le server
 * récupérer un fichier du server
+* fermer la connexion avec le server
 
 ## Consulter la liste des fichiers disponibles
 ### Résumé
@@ -139,6 +140,22 @@ Client                  Serveur
    * `DATA` : Fichier.
      * Ici, Char*
 
+## Fermer la connexion avec le serveur
+### Résumé
+Pour informer le serveur d'une deconexion. Le client envoie un message de type `CLOSE_SOCKET` au serveur. 
+Le serveur fermer alors le processus de communication.
+```
+Client                  Serveur
+   |      CLOSE_SOCKET     |
+   |---------------------->|
+   |                       X
+   |
+```
+### Contenu des messages
+* `CLOSE_SOCKET`: Message de type `CLOSE_SOCKET` envoyé au serveur.
+    * `CMD` : Commande indiquant le but de la requête.
+      * Ici, 0xCE
+
 ## Champ de type `STATUS`
 * 0x20 : Accepté
 * 0x41 : Refusé : Nom de fichier invalide
@@ -165,6 +182,36 @@ Client                  Serveur
 * 0xC2 : UPLOAD_FILE_NAME
 * 0xC3 : GET_FILE_DATA
 * 0xCD : UPLOAD_FILE_DATA
+* 0xCE : CLOSE_SOCKET
 
 ## Les Trames
-@todo faire les trames
+Nous avons ici décider de mettre en place deux trame différentes.
+Une trame nommee `INFOS_TRAME` qui contient les information conexe à l'envoie de fichier.
+Et une trame nommee `DATA_TRAME` qui contient l'entête du fichier.
+
+### Trame `INFOS_TRAME`
+```
+0                 1                 2
+ 0 1 2 3 4 5 6 7 8 0 1 2 3 4 5 6 7 8 
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|       CMD       |      STATUS     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      NB_FILE    |    SIZE_INFO    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                INFO            -->|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```
+
+### Trame `DATA_TRAME`
+```
+0                 1                 2
+ 0 1 2 3 4 5 6 7 8 0 1 2 3 4 5 6 7 8
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|      CMD        |      STATUS     |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|             SIZE_DATA             |
+|              4 Octet              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|               DATA             -->|
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+```

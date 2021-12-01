@@ -74,7 +74,7 @@ bool checkDataTrameError_ShouldReturnEMPTY_SIZE_DATA(){
     data->status = SUCCESS;
     data->dataFd = 1;
     bool res = checkDataTrameError(data);
-    return (SPP_Erno == STATUS_ERROR) && (res == true);
+    return (SPP_Erno == EMPTY_SIZE_DATA) && (res == true);
 }
 
 bool checkDataTrameError_ShouldPassWithDATA(){
@@ -85,7 +85,7 @@ bool checkDataTrameError_ShouldPassWithDATA(){
     data->sizeData = 256;
     data->dataFd = 1;
     bool res = checkDataTrameError(data);
-    return (SPP_Erno == STATUS_ERROR) && (res == true);
+    return (SPP_Erno == -1) && (res == false);
 }
 
 bool checkDataTrameError_ShouldPassWithError(){
@@ -96,83 +96,20 @@ bool checkDataTrameError_ShouldPassWithError(){
     data->sizeData = 0;
     data->dataFd = 1;
     bool res = checkDataTrameError(data);
-    return (SPP_Erno == STATUS_ERROR) && (res == true);
+    return (SPP_Erno == -1) && (res == false);
     
 }
 /*----------------Debut Test de la fonction encodeDataHead-----------------*/
 
-/*// Pour le cas de EMPTY_CMD
-bool encodeDataHead_itShouldReturnCmdEMPTYCMDError(){
-    SPP_Erno = -1;
-    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
-    data->status = SUCCESS;
-    data->sizeData = 0;
-    data->dataFd = 0;
-    unsigned char* dataTrame = encodeDataHead(data);
-    free(data);
-    return (SPP_Erno == EMPTY_CMD) && (dataTrame[0] == 0xff);
-}
-
-// Pour le cas de CMD_ERROR
-bool encodeDataHead_itShouldRetunrCMDERRORError(){
-    SPP_Erno = -1;
-    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
-    data->cmd = 0xF0;
-    data->status = SUCCESS;
-    data->sizeData = 0;
-    data->dataFd = 0;
-    unsigned char* dataTrame = encodeDataHead(data);
-    free(data);
-    return (SPP_Erno == CMD_ERROR) && (dataTrame[0] == 0xff);
-}
-
-// Pour le cas de EMPTY_STATUS
-bool encodeDataHead_itShouldReturnEMPTYSTATUSError(){
-    SPP_Erno = -1;
-    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
-    data->cmd = 0xAD;
-    data->sizeData = 0;
-    data->dataFd = 0;
-    unsigned char* dataTrame = encodeDataHead(data);
-    free(data);
-    return (SPP_Erno == EMPTY_STATUS) && (dataTrame[1] == 0xff);
-}
-
-// Pour le cas de EMPTY_FD
-bool encodeDataHead_itShouldReturnEMPTYFDError(){
-    SPP_Erno = -1;
-    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
-    data->cmd = 0xAD;
-    data->status = 0x20;
-    data->sizeData = 0;
-    unsigned char* dataTrame = encodeDataHead(data);
-    free(data);
-    return (SPP_Erno == EMPTY_FD) && (dataTrame[3] == 0xff);
-}
-
-// Pour le cas de FD_ERROR
-bool encodeDataHead_itShouldReturnFDERRORError(){
-    SPP_Erno = -1;
-    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
-    data->cmd = 0xAD;
-    data->status = 0x20;
-    data->sizeData = 0;
-    data->dataFd = -1;
-    unsigned char* dataTrame = encodeDataHead(data);
-    free(data);
-    return (SPP_Erno == FD_ERROR) && (dataTrame[3] == 0xff);
-}
-*/
-// Pour le cas de EMPTY_SIZE_DATA
+// Pour le cas d'envoie de data
 bool encodeDataHead_itShouldReturnCorrectFrame(){
     SPP_Erno = -1;
     PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd = DOWNLOAD_FILE_DATA;
     data->status = SUCCESS;
     data->sizeData = 2320441089;
-    data->dataFd = 0;
+    data->dataFd = 1;
     unsigned char* dataTrame = encodeDataHead(data);
-    printf("%x",dataTrame[0]);
     free(data);
     return (
         (dataTrame[0]==DOWNLOAD_FILE_DATA)&&
@@ -181,6 +118,25 @@ bool encodeDataHead_itShouldReturnCorrectFrame(){
         (dataTrame[3]==0b01001111)&&
         (dataTrame[4]==0b00011111)&&
         (dataTrame[5]==0b00000001)
+    );
+}
+
+// pour le cas d'envoie d'erreur
+bool encodeDataHead_itShouldReturnCorrectFrameWithStatusError(){
+    SPP_Erno = -1;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
+    data->cmd = DOWNLOAD_FILE_DATA;
+    data->status = NO_FOUND_FILE;
+    data->dataFd = 1;
+    unsigned char* dataTrame = encodeDataHead(data);
+    free(data);
+    return (
+        (dataTrame[0]==DOWNLOAD_FILE_DATA)&&
+        (dataTrame[1]==NO_FOUND_FILE)&&
+        (dataTrame[2]==0b0)&&
+        (dataTrame[3]==0b0)&&
+        (dataTrame[4]==0b0)&&
+        (dataTrame[5]==0b0)
     );
 }
 /*----------------FIN Test de la fonction encodeDataHead-----------------*/
@@ -374,7 +330,8 @@ void testSPP(){
     passTest("encodeDataHead","it should return status empty error",encodeDataHead_itShouldReturnEMPTYSTATUSError());
     passTest("encodeDataHead","it should return EMPTYFD",encodeDataHead_itShouldReturnEMPTYFDError());
     passTest("encodeDataHead","it should return FDERROR",encodeDataHead_itShouldReturnFDERRORError());*/
-    passTest("encodeDataHead","it should return EMPTY_SIZE_DATA",encodeDataHead_itShouldReturnCorrectFrame());
+    passTest("encodeDataHead","it should return Correct Frame",encodeDataHead_itShouldReturnCorrectFrame());
+    passTest("encodeDataHead","it should return Correct Frame with status Error",encodeDataHead_itShouldReturnCorrectFrameWithStatusError());
 
     /*
     printTitle("Test de la fonction decodeDataHead");

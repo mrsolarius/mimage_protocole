@@ -42,7 +42,7 @@ bool checkDataTrameError(PDataTrame dataTrame){
         SPP_Erno=EMPTY_CMD;
         test=true;
     }else
-    if (!((dataTrame->cmd==DOWNLOAD_FILE_NAME)||(dataTrame->cmd==UPLOAD_FILE_DATA))){
+    if (!((dataTrame->cmd==DOWNLOAD_FILE_DATA)||(dataTrame->cmd==UPLOAD_FILE_DATA))){
         SPP_Erno=CMD_ERROR;
         test=true;
     }else
@@ -50,9 +50,16 @@ bool checkDataTrameError(PDataTrame dataTrame){
         SPP_Erno=EMPTY_STATUS;
         test=true;
     }else
-    if ((dataTrame->status!=SUCCESS)||
-        !((dataTrame->status>=0x41)&&(dataTrame->status<=0x45))||
-        !((dataTrame->status>=0x50)&&(dataTrame->status<=0x52))){
+    if (!((dataTrame->status==SUCCESS)||
+        (dataTrame->status==INVALID_NAME_FILE)||
+        (dataTrame->status==INVALID_EXTEND_FILE)||
+        (dataTrame->status==NAME_ALREADY_TAKEN)||
+        (dataTrame->status==NO_FOUND_FILE)||
+        (dataTrame->status==CHECKSUM_ERROR)||
+        (dataTrame->status==INTERNAL_ERROR)||
+        (dataTrame->status==LACK_OF_SPACE)||
+        (dataTrame->status==FILE_TOO_LARGE))){
+        printf("%x\n",dataTrame->status);
         SPP_Erno=STATUS_ERROR;
         test=true;
     }else

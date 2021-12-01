@@ -11,25 +11,28 @@ const char *DDP_errList[] = {
 
 bool checkInfoTrameError(PInfoTrame infosTrame){
     bool test=false;
-    if (infosTrame->cmd==0){
+    if (infosTrame->cmd == 0)
+        {
         SPP_Erno=EMPTY_CMD;
         test=true;
-    }
-    if ((infosTrame->cmd==DOWNLOAD_FILE_NAME)||(infosTrame->cmd==UPLOAD_FILE_DATA)){
+    }else
+    if (((infosTrame->cmd<0xA1)||(infosTrame->cmd>0xCE))||
+        ((infosTrame->cmd>0xA4)&&(infosTrame->cmd<0xC1))||
+        ((infosTrame->cmd>0xC3)&&(infosTrame->cmd<0xCE))){
         SPP_Erno=CMD_ERROR;
         test=true;
-    }
+    }else
     if (infosTrame->status==0){
         SPP_Erno=EMPTY_STATUS;
         test=true;
-    }
-    if ((infosTrame->status!=SUCCESS)||
-        !((infosTrame->status>=0x41)&&(infosTrame->status<=0x45))||
-        !((infosTrame->status>=0x50)&&(infosTrame->status<=0x52))){
+    }else
+    if (((infosTrame->status<0x20)||(infosTrame->status>0x52))||
+        ((infosTrame->status>0x20)&&(infosTrame->status<0x41))||
+        ((infosTrame->status>0x45)&&(infosTrame->status<0x50))){
         SPP_Erno=STATUS_ERROR;
         test=true;
-        }
-    if ((infosTrame->sizeInfos!=strlen(infosTrame->infos))){
+    }else
+    if ((infosTrame->sizeInfos) != (strlen(infosTrame->infos))){
         SPP_Erno=WRONG_SIZE;
         test=true;
     }
@@ -42,7 +45,7 @@ bool checkDataTrameError(PDataTrame dataTrame){
         SPP_Erno=EMPTY_CMD;
         test=true;
     }
-    if ((dataTrame->cmd!=DOWNLOAD_FILE_NAME)||(dataTrame->cmd!=UPLOAD_FILE_DATA)){
+    if ((dataTrame->cmd!=DOWNLOAD_FILE_DATA)||(dataTrame->cmd!=UPLOAD_FILE_DATA)){
         SPP_Erno=CMD_ERROR;
         test=true;
     }

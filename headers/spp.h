@@ -132,7 +132,7 @@ PInfoTrame decodeInfosTrame(char* infos, unsigned int size);
 *       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
 *       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
-*       Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
+*       Si infosTrame a un sizeInfos qui est différent de sa taille, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
 *      @param char* data corresponds au headers de la trame.
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,

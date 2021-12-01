@@ -157,24 +157,14 @@ typedef DataTrame * PDataTrame;
  *      encodeDataHead - encode la structure dataTrame en binaire.
  * Description :
  *      Récupère les éléments de la tête de la structure et les réorganise selon la structure de la dataTrame préalablement définie.
- *      Si dataTrame a un cmd inexistant, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
- *      Si dataTrame a un cmd ne corresponds pas à liste de commande,alors il envoie un message d'erreur 1 de type CMD_ERROR.
- *      Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
- *      Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
- *      Si dataFd est vide, alors le programme renvoie une message d'erreur 3 de type EMPTY_FD.
- *      Si dataFd ne corresponds pas à liste de commande, alors il envoie un message d'erreur 4 de type FD_ERROR.
- *      Si sizeData est nul, alors  le programme renvoie une message d'erreur 5 de type EMPTY_SIZE_DATA.
+ *      On vérifie si la trame est bien implémenté.
+ *      On vérifie si la trame est correct avec un status erreur.
+ *      On vérifie si il renvoie bien une erreur.
  *  Paramètre :
  *      @param struct dataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci).
-
-        EMPTY_CMD=0,
-        CMD_ERROR=1,
-        EMPTY_STATUS=2,
-*       STATUS_ERROR=7,
-        EMPTY_FD=3
-        FD_ERROR=4,
-        EMPTY_SIZE_DATA=5,
-        STATUS_ERROR=7
+ *      CorrectFrame
+ *      CorrectFrameWithStatusError
+ *      ThrowError
  **/
 unsigned char* encodeDataHead(PDataTrame);
 
@@ -182,17 +172,17 @@ unsigned char* encodeDataHead(PDataTrame);
 *   Nom: decodeDataHead - Décode le headers de la trame et renvoie une data trame contenant les informations récoltées.
 *   Description :
 *       Récupère les informations contenus dans la tête de la structure et les décode dans le format de la structure pour une utilisation ultérieure.
-*       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
-*       Si cmd est vide, alors le programme renvoie un message d'erreur 0 de type EMPTY_CMD.
-*       Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
-*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
+*       On vérifie le cas ou il y a une erreur dans le cmd.
+*       On vérifie le cas ou le status erreur est vide.
+*       On vérifie si la trame fonctionne avec les datas.
+*       On vérifie si la trame fonctionne avec des erreurs.
 *
 *      @param char* data corresponds au headers de la trame.
-*       EMPTY_CMD=0,
-*       CMD_ERROR=1,
-*       EMPTY_STATUS=2,
-*       STATUS_ERROR=7,
-*       STATUS_ERROR=7
+*       CmdERORR
+*       EMPTY_STATUSError
+*       PassWithData
+*       PassWithError
+*       
 */
 PDataTrame decodeDataHead(char * data, int dataFd);
 
@@ -207,15 +197,19 @@ PDataTrame decodeDataHead(char * data, int dataFd);
 *       Si dataTrame a un dataFd nul, alors il envoie un message d'erreur 3 de type EMPTY_FD.
 *       Si dataTrame a une dataFd inférieur à 0, alors il envoie un message d'erreur 4 de type FD_ERROR.
 *       Si dataTrame a un sizeData de 0 et que le status est SUCESS, alors il envoie un message d'erreur 5 de type EMPTY_SIZE_DATA.
+*       On vérifie si la trame fonctionne avec des datas.
+*       On vérifie si la trame revoie des erreurs.
 *      @param char* data corresponds au headers de la trame.
-*       CMD_ERROR=1,
+*       
 *       EMPTY_CMD=0,
+*       CMD_ERROR=1,
 *       EMPTY_STATUS=2,
 *       STATUS_ERROR=7,
 *       EMPTY_FD=3,
-*       FD_ERROR=4,
 *       EMPTY_SIZE_DATA=5
-*       
+*       FD_ERROR=4,
+*       WithDATA()
+*       WithError
 */
 bool checkDataTrameError(PDataTrame dataTrame);
 

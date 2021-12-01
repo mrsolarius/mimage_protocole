@@ -9,5 +9,7 @@ int main(int argc, char *argv[])
     resume();
     //getType
     testType();
+    //test SPP
+    testSPP();
     return 0;
 }

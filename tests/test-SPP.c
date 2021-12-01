@@ -87,8 +87,8 @@ bool encodeDataHead_itShouldReturnEMPTYSIZEDATAError(){
 // Pour le cas de EMPTY_CMD
 bool decodeDataHead_itShouldReturnCmdEMPTYCMDError(){
     SPP_Erno = -1;
-    char * trame={0,SUCCESS,0,0};
-    PDataTrame dataTrame = decodeDataHead(trame);
+    char trame[]={0,SUCCESS,0,0};
+    PDataTrame dataTrame = decodeDataHead(trame,1);
     free(dataTrame);
     return (SPP_Erno == EMPTY_CMD) && (dataTrame->cmd == 0xff);
 }
@@ -96,16 +96,16 @@ bool decodeDataHead_itShouldReturnCmdEMPTYCMDError(){
 // Pour le cas de CMD_ERROR
 bool decodeDataHead_itShouldReturnCMDERRORError(){
     SPP_Erno = -1;
-    char * trame={0xF0,SUCCESS,0,0};
-    PDataTrame dataTrame = decodeDataHead(trame);
+    char trame[]={0xF0,SUCCESS,0,0};
+    PDataTrame dataTrame = decodeDataHead(trame,1);
     free(dataTrame);
     return (SPP_Erno == CMD_ERROR) && (dataTrame->cmd == 0xff);
 }
 // Pour le cas de EMPTY_STATUS
 bool decodeDataHead_itShouldReturnEMPTY_STATUSError(){
     SPP_Erno = -1;
-    char * trame={0xAD,0,0,0};
-    PDataTrame dataTrame = decodeDataHead(trame);
+    char trame[]={0xAD,0,0,0};
+    PDataTrame dataTrame = decodeDataHead(trame,1);
     free(dataTrame);
     return (SPP_Erno == EMPTY_STATUS) && (dataTrame->status == 0xff);
 
@@ -216,7 +216,7 @@ bool encodeInfosTrame_itShouldRetunrWRONGSIZEError(){
 // Pour le cas de EMPTY_CMD
 bool decodeInfosTrame_itShouldReturnCmdEMPTYCMDError(){
     SPP_Erno = -1;
-    char * trame={0,SUCCESS,0,0,0};
+    char trame[]={0,SUCCESS,0,0,0};
     PInfoTrame infosTrame = decodeInfosTrame(trame,5);
     return (SPP_Erno == EMPTY_CMD) && (infosTrame->cmd == 0xff);
 }
@@ -224,7 +224,7 @@ bool decodeInfosTrame_itShouldReturnCmdEMPTYCMDError(){
 // Pour le cas de CMD_ERROR
 bool decodeInfosTrame_itShouldReturnCMDERRORError(){
     SPP_Erno = -1;
-    char * trame={0xF0,SUCCESS,0,0,0};
+    char trame[]={0xF0,SUCCESS,0,0,0};
     PInfoTrame infosTrame = decodeInfosTrame(trame,5);
 
     return (SPP_Erno == CMD_ERROR) && (infosTrame->cmd == 0xff);
@@ -232,7 +232,7 @@ bool decodeInfosTrame_itShouldReturnCMDERRORError(){
 // Pour le cas de EMPTY_STATUS
 bool decodeInfosTrame_itShouldReturnEMPTYSTATUSError(){
     SPP_Erno = -1;
-    char * trame={0xAD,0,0,0,0};
+    char trame[]={0xAD,0,0,0,0};
     PInfoTrame infosTrame = decodeInfosTrame(trame,5);
 
     return (SPP_Erno == EMPTY_STATUS) && (infosTrame->status == 0xff);
@@ -242,7 +242,7 @@ bool decodeInfosTrame_itShouldReturnEMPTYSTATUSError(){
 // Pour le cas de EMPTY_STATUS
 bool decodeInfosTrame_itShouldReturnWRONGSIZEError(){
     SPP_Erno = -1;
-    char * trame={0xF0,0,0,-1,0};
+    char trame[]={0xF0,0,0,-1,0};
     PInfoTrame infosTrame = decodeInfosTrame(trame,5);
 
     return (SPP_Erno == EMPTY_STATUS) && (infosTrame->status == 0xff);

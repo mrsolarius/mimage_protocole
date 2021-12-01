@@ -122,7 +122,7 @@ unsigned char* encodeInfosTrame(PInfoTrame);
 *       WRONG_SIZE=6,
 *       STATUS_ERROR=7
 */
-PInfoTrame decodeInfosTrame(char* infos, unsigned int size);
+PInfoTrame decodeInfosTrame(unsigned char* infos, unsigned int size);
 
 /**
 *   Nom: checkInfoTrameError - Test les erreurs potentiels de la trame infotrame et positionne SPP_ERNO.
@@ -184,7 +184,7 @@ unsigned char* encodeDataHead(PDataTrame);
 *       PassWithError
 *       
 */
-PDataTrame decodeDataHead(char * data, int dataFd);
+PDataTrame decodeDataHead(unsigned char * data, int dataFd);
 
 /**
 *   Nom: checkDataTrameError - Test les erreurs potentiels de la trame datatrame et positionne SPP_ERNO.

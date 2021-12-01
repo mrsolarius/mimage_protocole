@@ -112,7 +112,7 @@ unsigned char* encodeInfosTrame(PInfoTrame infosTrame){
     return trame;
 }
 
-PInfoTrame decodeInfosTrame(char* infos, unsigned int size){
+PInfoTrame decodeInfosTrame(unsigned char* infos, unsigned int size){
     PInfoTrame TrameDecod = (PInfoTrame) malloc(sizeof(InfosTrame));
     TrameDecod->cmd=infos[0];
     TrameDecod->status=infos[1];
@@ -144,7 +144,7 @@ unsigned char* encodeDataHead(PDataTrame dataTrame){
     return trame;
 }
 
-PDataTrame decodeDataHead(char * data, int dataFd){
+PDataTrame decodeDataHead(unsigned char * data, int dataFd){
     PDataTrame trameDecod = (PDataTrame) malloc(sizeof(DataTrame));
     trameDecod->cmd=data[0];
     trameDecod->status=data[1];

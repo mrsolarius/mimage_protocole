@@ -207,13 +207,25 @@ bool checkInfoTrameError_itShouldRetunrEMPTYSTATUSError(){
     return (SPP_Erno == EMPTY_STATUS) && (infosTrame==true);
 }
 
+// Pour le cas de STATUS_ERROR
+bool checkInfoTrameError_itShouldReturnSTATUSERROR(){
+    SPP_Erno=-1;
+    PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
+    infos->cmd = LIST_SIZE;
+    infos->status = 0xFE;
+    bool infosTrame = checkInfoTrameError(infos);
+    free(infos);
+    return (SPP_Erno == STATUS_ERROR) && (infosTrame == true);
+}
+
 // Pour le cas de WRONG_SIZE
 bool checkInfoTrameError_itShouldRetunrWRONGSIZEError(){
     SPP_Erno = -1;
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = LIST_SIZE;
     infos->status = SUCCESS;
-    infos->sizeInfos = -1;
+    infos->sizeInfos = 20;
+    infos->infos = "azerty";
     bool infosTrame = checkInfoTrameError(infos);
     free(infos);
     return (SPP_Erno == WRONG_SIZE) && (infosTrame==true);
@@ -355,7 +367,8 @@ void testSPP(){
     passTest("checkInfoTrameError","it should return EMPTY_CMD",checkInfoTrameError_itShouldRetunrEMPTYCMDError());
     passTest("checkInfoTrameError","it should return CMD_ERROR",checkInfoTrameError_itShouldRetunrCMDERRORError());
     passTest("checkInfoTrameError","it should return EMPTY_STATUS",checkInfoTrameError_itShouldRetunrEMPTYSTATUSError());
-    passTest("checkInfoTrameError","it should return WRONG_SIZE",checkInfoTrameError_itShouldRetunrWRONGSIZEError());*/
+    passTest("checkInfoTrameError","it should return STATUS_ERROR",checkInfoTrameError_itShouldReturnSTATUSERROR());
+    passTest("checkInfoTrameError","it should return WRONG_SIZE",checkInfoTrameError_itShouldRetunrWRONGSIZEError());
     
 }
 

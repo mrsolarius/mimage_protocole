@@ -127,6 +127,7 @@ bool encodeDataHead_itShouldReturnCorrectFrameWithStatusError(){
     PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
     data->cmd = DOWNLOAD_FILE_DATA;
     data->status = NO_FOUND_FILE;
+    data->sizeData = 0;
     data->dataFd = 1;
     unsigned char* dataTrame = encodeDataHead(data);
     free(data);
@@ -139,35 +140,63 @@ bool encodeDataHead_itShouldReturnCorrectFrameWithStatusError(){
         (dataTrame[5]==0b0)
     );
 }
+
+bool encodeDataHead_itShouldReturnThrowError(){
+    SPP_Erno = -1;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
+    data->cmd=0xFD;
+    data->status = NO_FOUND_FILE;
+    data->dataFd = 1;
+    unsigned char* dataTrame = encodeDataHead(data);
+    free(data);
+    return ((dataTrame[0]==0xff)&&(SPP_Erno==CMD_ERROR));
+}
 /*----------------FIN Test de la fonction encodeDataHead-----------------*/
 
 /*Partie des test commanté car à revoir (structure envoyer à la place d'un char *)*/
 /*----------------Debut Test de la fonction decodeDataHead-----------------*/
 
-// Pour le cas de EMPTY_CMD
-bool decodeDataHead_itShouldReturnCmdEMPTYCMDError(){
-    SPP_Erno = -1;
-    char trame[]={0,SUCCESS,0,0};
-    PDataTrame dataTrame = decodeDataHead(trame,1);
-    free(dataTrame);
-    return (SPP_Erno == EMPTY_CMD) && (dataTrame->cmd == 0xff);
-}
-
 // Pour le cas de CMD_ERROR
-bool decodeDataHead_itShouldReturnCMDERRORError(){
+bool decodeDataHead_itShouldReturnCmdERORR(){
     SPP_Erno = -1;
-    char trame[]={0xF0,SUCCESS,0,0};
+    char trame[]={0xFD,NO_FOUND_FILE,0b0,0b0,0b0,0b0};
     PDataTrame dataTrame = decodeDataHead(trame,1);
-    free(dataTrame);
     return (SPP_Erno == CMD_ERROR) && (dataTrame->cmd == 0xff);
 }
+
 // Pour le cas de EMPTY_STATUS
 bool decodeDataHead_itShouldReturnEMPTY_STATUSError(){
     SPP_Erno = -1;
-    char trame[]={0xAD,0,0,0};
+    char trame[]={DOWNLOAD_FILE_DATA,0xFD,0b0,0b0,0b0};
     PDataTrame dataTrame = decodeDataHead(trame,1);
-    free(dataTrame);
-    return (SPP_Erno == EMPTY_STATUS) && (dataTrame->status == 0xff);
+    return (SPP_Erno == STATUS_ERROR) && (dataTrame->cmd == 0xff);
+
+}
+
+// Pour verifier que la trame est bien décoder
+bool decodeDataHead_itShouldPassWithData(){
+    SPP_Erno = -1;
+    char trame[]={DOWNLOAD_FILE_DATA,SUCCESS,0b10001010,0b01001111,0b00011111,0b00000001};
+    PDataTrame dataTrame = decodeDataHead(trame,1);
+    return (SPP_Erno == -1) && (
+        (dataTrame->cmd == DOWNLOAD_FILE_DATA)&&
+        (dataTrame->status == SUCCESS) &&
+        (dataTrame->sizeData == 2320441089)&&
+        (dataTrame->dataFd ==1)
+    );
+}
+
+// Pour verifier que la trame est bien décoder
+bool decodeDataHead_itShouldPassWithError(){
+    SPP_Erno = -1;
+    char trame[]={DOWNLOAD_FILE_DATA,INTERNAL_ERROR,0,0,0,0};
+    PDataTrame dataTrame = decodeDataHead(trame,1);
+    return (SPP_Erno == -1) && (
+        (dataTrame->cmd == DOWNLOAD_FILE_DATA)&&
+        (dataTrame->status == INTERNAL_ERROR) &&
+        (dataTrame->sizeData == 0)&&
+        (dataTrame->dataFd ==1)
+    );
 
 }
 /*----------------FIN Test de la fonction decodeDataHead-----------------*/
@@ -337,20 +366,17 @@ void testSPP(){
     passTest("checkDataTrameError","it should pass test without data_size",checkDataTrameError_ShouldPassWithError());
 
     printTitle("Test de la fonction encodeDataHead");
-    /*passTest("encodeDataHead","it should return cmd empty error",encodeDataHead_itShouldReturnCmdEMPTYCMDError());
-    passTest("encodeDataHead","it should return cmd error",encodeDataHead_itShouldRetunrCMDERRORError());
-    passTest("encodeDataHead","it should return status empty error",encodeDataHead_itShouldReturnEMPTYSTATUSError());
-    passTest("encodeDataHead","it should return EMPTYFD",encodeDataHead_itShouldReturnEMPTYFDError());
-    passTest("encodeDataHead","it should return FDERROR",encodeDataHead_itShouldReturnFDERRORError());*/
     passTest("encodeDataHead","it should return Correct Frame",encodeDataHead_itShouldReturnCorrectFrame());
     passTest("encodeDataHead","it should return Correct Frame with status Error",encodeDataHead_itShouldReturnCorrectFrameWithStatusError());
+    passTest("encodeDataHead","it should return Error",encodeDataHead_itShouldReturnThrowError());
 
-    /*
+
     printTitle("Test de la fonction decodeDataHead");
-    passTest("decodeDataHead","it should return EMPTY_CMD",decodeDataHead_itShouldReturnCmdEMPTYCMDError());
-    passTest("decodeDataHead","it should return CMD_ERROR",decodeDataHead_itShouldReturnCMDERRORError());
-    passTest("decodeDataHead","it should return EMPTY_STATUS",decodeDataHead_itShouldReturnEMPTY_STATUSError());
-
+    passTest("decodeDataHead","it should return CMD_ERROR",decodeDataHead_itShouldReturnCmdERORR());
+    passTest("decodeDataHead","it should return EMPTY_STATUS",decodeDataHead_itShouldReturnEMPTY_STATUSError());;
+    passTest("decodeDataHead","it should return Correct Frame With",decodeDataHead_itShouldPassWithData());
+    passTest("decodeDataHead","it should return Correct Error Frame",decodeDataHead_itShouldPassWithError());
+/*
     printTitle("Test de la fonction encodeInfosTrame");
     passTest("encodeInfosTrame","it should return EMPTY_CMD",encodeInfosTrame_itShouldReturnCmdEMPTYCMDError());
     passTest("encodeInfosTrame","it should return CMD_ERROR",encodeInfosTrame_itShouldRetunrCMDERRORError());

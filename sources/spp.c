@@ -62,7 +62,6 @@ bool checkDataTrameError(PDataTrame dataTrame){
         (dataTrame->status==INTERNAL_ERROR)||
         (dataTrame->status==LACK_OF_SPACE)||
         (dataTrame->status==FILE_TOO_LARGE))){
-        printf("%x\n",dataTrame->status);
         SPP_Erno=STATUS_ERROR;
         test=true;
     }else
@@ -136,9 +135,9 @@ PDataTrame decodeDataHead(char * data, int dataFd){
     trameDecod->status=data[1];
     trameDecod->sizeData=0;
     trameDecod->sizeData|=(data[2]& 0xFF)<<24;
-    trameDecod->sizeData|=(data[2]& 0xFF)<<16;
-    trameDecod->sizeData|=(data[2]& 0xFF)<<8;
-    trameDecod->sizeData|=(data[2]& 0xFF);
+    trameDecod->sizeData|=(data[3]& 0xFF)<<16;
+    trameDecod->sizeData|=(data[4]& 0xFF)<<8;
+    trameDecod->sizeData|=(data[5]& 0xFF);
     trameDecod->dataFd=dataFd;
     // on check tous les problèmes potentiel pouvant subevenir
     if (checkDataTrameError(trameDecod)==true){

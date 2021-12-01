@@ -148,7 +148,7 @@ bool checkInfoTrameError(PInfoTrame);
 typedef struct _DataTrame{
     unsigned char cmd;
     unsigned char status;
-    unsigned long sizeData;
+    unsigned int sizeData;
     int dataFd;
 } DataTrame;
 typedef DataTrame * PDataTrame;

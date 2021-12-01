@@ -44,5 +44,13 @@ char* getType(char * filePath) {
    
     /* go to the token that we want (after the first ' ' and before the ';') */
     token = strtok(NULL, s2);
+    char* check1 = strstr(token, ":");      //if a file has a space in his name, we will get ':' in our token
+    char* check2 = strstr(token,"cannot open");     //if we search a file that doesn't exist or if we're not on the project's root
+    if (check1!=NULL && check2 == NULL) {
+        //There's a problem with the name of the file, due to some ' ' characters in it
+        token = "space_error";
+    } else if (check2 != NULL) {
+        token = "unfound_error";
+    }
     return token;
 }

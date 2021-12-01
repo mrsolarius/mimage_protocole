@@ -1,5 +1,8 @@
-# Makefile sous licence MIT crée par TheNetAdmin et modifier par notre groupe de projet
+# MIT License
+# Copyright (c) 2017-2021, Zixuan Wang <zxwang42@gmail.com> and Collaborators
 # URL : https://github.com/TheNetAdmin/Makefile-Templates
+
+# Template modifier par nos soins voir le rapport pour contaitre nos modifications.
 
 # path macros
 BIN_PATH := bin

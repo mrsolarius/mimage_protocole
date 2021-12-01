@@ -22,8 +22,18 @@ bool checkDataTrameError_ShouldReturnCMD_ERROR(){
     data->sizeData = 256;
     data->dataFd = 1;
     bool res = checkDataTrameError(data);
-    return (SPP_Erno == CMD_ERROR) && (res == true);
-    
+    return (SPP_Erno == CMD_ERROR) && (res == true); 
+}
+
+bool checkDataTrameError_ShouldReturnCMD_ERROR_1(){
+    SPP_Erno=-1;
+    PDataTrame data = (PDataTrame) malloc(sizeof(DataTrame));
+    data->cmd=0xFD;
+    data->status = SUCCESS;
+    data->sizeData = 256;
+    data->dataFd = 1;
+    bool res = checkDataTrameError(data);
+    return (SPP_Erno == CMD_ERROR) && (res == true); 
 }
 
 bool checkDataTrameError_ShouldReturnEMPTY_STATUS(){
@@ -351,6 +361,7 @@ void testSPP(){
     printTitle("Test de la fonction checkDataTrameError");
     passTest("checkDataTrameError","it should return EMPTY_CMD",checkDataTrameError_ShouldReturnEMPTY_CMD());
     passTest("checkDataTrameError","it should return CMD_ERROR",checkDataTrameError_ShouldReturnCMD_ERROR());
+    passTest("checkDataTrameError","it should return CMD_ERROR",checkDataTrameError_ShouldReturnCMD_ERROR_1());
     passTest("checkDataTrameError","it should return EMPTY_STATUS",checkDataTrameError_ShouldReturnEMPTY_STATUS());
     passTest("checkDataTrameError","it should return STATUS_ERROR",checkDataTrameError_ShouldReturnSTATUS_ERROR());
     passTest("checkDataTrameError","it should return EMPTY_SIZE_DATA",checkDataTrameError_ShouldReturnEMPTY_SIZE_DATA());

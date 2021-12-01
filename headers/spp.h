@@ -10,14 +10,15 @@ extern int SPP_Erno;
 /**
  * Enum de toutes les erreurs
  */
-enum SPP_DATA_TRAME_errCode{
+enum SPP_ERRCODE{
     EMPTY_CMD=0,
     CMD_ERROR=1,
     EMPTY_STATUS=2,
     EMPTY_FD=3,
     FD_ERROR=4,
     EMPTY_SIZE_DATA=5,
-    WRONG_SIZE=6
+    WRONG_SIZE=6,
+    STATUS_ERROR=7
 };
 
 /**
@@ -32,7 +33,8 @@ enum COMMANDES {
     GET_LIST=0xC1,
     UPLOAD_FILE_NAME=0xC2,
     GET_FILE_DATA=0xC3,
-    UPLOAD_FILE_DATA=0xCD
+    UPLOAD_FILE_DATA=0xCD,
+    CLOSE_SOCKET=0xCE
 };
 
 /**
@@ -48,7 +50,6 @@ enum STATUS{
     INTERNAL_ERROR= 0x50,
     LACK_OF_SPACE= 0x51,
     FILE_TOO_LARGE= 0x52
-    
 };
 
 
@@ -109,12 +110,14 @@ char* encodeInfosTrame(PInfoTrame);
 *       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
+*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
 *       Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
 *      @param char* data corresponds au headers de la trame.
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
-*       WRONG_SIZE=6
+*       WRONG_SIZE=6,
+*       STATUS_ERROR=7
 */
 PInfoTrame decodeInfosTrame(char* infos, unsigned int size);
 
@@ -125,6 +128,7 @@ PInfoTrame decodeInfosTrame(char* infos, unsigned int size);
 *       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
+*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
 *       Si infosTrame a un sizeInfos est faux, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
 *      @param char* data corresponds au headers de la trame.
 *       CMD_ERROR=1,
@@ -152,6 +156,7 @@ typedef DataTrame * PDataTrame;
  *      Si dataTrame a un cmd inexistant, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
  *      Si dataTrame a un cmd ne corresponds pas à liste de commande,alors il envoie un message d'erreur 1 de type CMD_ERROR.
  *      Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
+ *      Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
  *      Si dataFd est vide, alors le programme renvoie une message d'erreur 3 de type EMPTY_FD.
  *      Si dataFd ne corresponds pas à liste de commande, alors il envoie un message d'erreur 4 de type FD_ERROR.
  *      Si sizeData est nul, alors  le programme renvoie une message d'erreur 5 de type EMPTY_SIZE_DATA.
@@ -164,6 +169,7 @@ typedef DataTrame * PDataTrame;
         EMPTY_FD=3
         FD_ERROR=4,
         EMPTY_SIZE_DATA=5,
+        STATUS_ERROR=7
  **/
 char* encodeDataHead(PDataTrame);
 
@@ -174,13 +180,15 @@ char* encodeDataHead(PDataTrame);
 *       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *       Si cmd est vide, alors le programme renvoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si status est vide, alors le programme renvoie une message d'erreur 2 de type EMPTY_STATUS.
+*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
 *
 *      @param char* data corresponds au headers de la trame.
 *       EMPTY_CMD=0,
 *       CMD_ERROR=1,
 *       EMPTY_STATUS=2,
+*       STATUS_ERROR=7
 */
-PDataTrame decodeDataHead(char * data);
+PDataTrame decodeDataHead(char * data, int dataFd);
 
 /*-----------------------------------------FIN_DATA_TRAME---------------------------------------------*/
 

@@ -1,3 +1,8 @@
+#ifndef SPP_IN_OUT_H
+#define SPP_IN_OUT_H
+
+#include "spp.h"
+
 /**
   * Nom :
  *      sendDataTrame - envoie la dataTrame passé en paramètre. Il retourne 0 si succès sinon -1 erreur.
@@ -10,12 +15,15 @@
  *      Si dataTrame a un status ne corresponds pas à liste de commande,alors il il envoie un message d'erreur 4 de type statusErreur.
  *      Si dataTrame a un sizeData inexistant, alors il il envoie un message d'erreur 5 de type sizeDataVide.
  * Paramètre :
- *      @param struct dataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci) 
+ *      @param PDataTrame corresponds à la structure générer par le serveur (à partir de l'analyse de fichier créer par celui -ci) 
  **/
 
 
-int sendDataTrame( struct dataTrame);
+int sendDataHead(PDataTrame);
 
+int sendDataCore(PDataTrame);
+
+PDataTrame receiveDataHead(int sockFd);
 /**
   * Nom :
  *      receiveData - recoit le dataHead et un file descripteur. Il retourne 0 si succès sinon -1 erreur.
@@ -31,4 +39,11 @@ int sendDataTrame( struct dataTrame);
  * Paramètre :
  *      @param char* head, int fileFD correspond à l'entete de dataTrame et le descripteur
  **/
-int receiveData(char*  head, int fileFD);
+int receiveDataCore(PDataTrame);
+
+
+int sendInfo(PInfoTrame);
+
+PInfoTrame receciveInfo(int sockFd);
+
+#endif //SPP_IN_OUT_H

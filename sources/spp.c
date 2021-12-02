@@ -112,7 +112,7 @@ unsigned char* encodeInfosTrame(PInfoTrame infosTrame){
     return trame;
 }
 
-PInfoTrame decodeInfosTrame(char* infos, unsigned int size){
+PInfoTrame decodeInfosTrame(unsigned char* infos, unsigned int size){
     PInfoTrame TrameDecod = (PInfoTrame) malloc(sizeof(InfosTrame));
     TrameDecod->cmd=infos[0];
     TrameDecod->status=infos[1];
@@ -144,7 +144,7 @@ unsigned char* encodeDataHead(PDataTrame dataTrame){
     return trame;
 }
 
-PDataTrame decodeDataHead(char * data, int dataFd){
+PDataTrame decodeDataHead(unsigned char * data, int dataFd){
     PDataTrame trameDecod = (PDataTrame) malloc(sizeof(DataTrame));
     trameDecod->cmd=data[0];
     trameDecod->status=data[1];
@@ -159,4 +159,32 @@ PDataTrame decodeDataHead(char * data, int dataFd){
         trameDecod->cmd=0xFF; 
     }
     return trameDecod;
+}
+
+int checkTypeFrame(unsigned char * data){
+    if(data[0]==UPLOAD_FILE_DATA || data[0]==DOWNLOAD_FILE_DATA){
+        return 1;
+    }
+    else if(data[0]==LIST_SIZE ||
+       data[0]==DOWNLOAD_FILE_NAME ||
+       data[0]==ACQUIT_FILE_NAME ||
+       data[0]==ACQUIT_FILE_DATA ||
+       data[0]==GET_LIST ||
+       data[0]==UPLOAD_FILE_NAME ||
+       data[0]==GET_FILE_DATA ||
+       data[0]==CLOSE_SOCKET){
+        return 2;
+    }else{
+        return -1;
+    }
+}
+
+void SPP_perror(char* msg){
+    if (SPP_Erno >= 0 && SPP_Erno <= 8) {
+        fprintf(stderr, "\n%s : %s\n", msg, DDP_errList[SPP_Erno]);
+    } else if(SPP_Erno==-1){
+        fprintf(stderr, "\n%s : Success\n", msg);
+    }else{
+        fprintf(stderr, "\n%s : Unknown error\n", msg);
+    }
 }

@@ -9,9 +9,16 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/wait.h>
+#include "test-core.h"
 #include "spp.h"
 #include "utils.h"
-
+void print_hex_0(const unsigned char *s)
+{
+    for(int i = 0; i < MAX_TRAME_SIZE+6; i++)
+        printf("%02x-", s[i]);
+    
+    printf("\n");
+}
 void handlerChildDeath(){
     wait(NULL);
     printf("[server] le socket applicatif et mort\n");
@@ -25,6 +32,7 @@ void serviceProcess(int serviceSockfd){
     while(1){
         bzero(frame, TRAME_SIZE); //bzero permet de vider le buffer et de le remplir de 0
         n = read(serviceSockfd, frame, TRAME_SIZE);
+        //print_hex_0(frame);
         if (n < 0) {
             perror("[server] Erreur de lecture sur le socket applicatif");
             exit(1);
@@ -158,6 +166,8 @@ void listFilesS(int sockfd){
         info->nbFiles = 1;
         info->infos = files[i];
         frame = encodeInfosTrame(info);
+        printf("[server] envoie %s\n",info->infos);
+        //print_hex_0(frame);
         int n = write(sockfd, frame, TRAME_SIZE+info->sizeInfos);
         if (n < 0) {
             perror("[server] Erreur de lecture sur le socket applicatif");

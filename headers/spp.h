@@ -128,6 +128,8 @@ unsigned char* encodeInfosTrame(PInfoTrame);
 
 PInfoTrame decodeInfosTrame(unsigned char* infos);
 
+PInfoTrame decodeInfosTrameFULL(unsigned char* infos);
+
 /**
 *   Nom: decodeInfosTrame - Décode le contenu de info dans la trame.
 *   Description :

@@ -9,6 +9,14 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "spp.h"
+void print_hex1(const unsigned char *s)
+{
+    //tant que le pointeur n'est pas à la fin de la chaine
+    for(int i = 0; i < MAX_TRAME_SIZE+6; i++)
+        printf("%02x-", s[i]);
+    
+    printf("\n");
+}
 // fonction principal du client
 void clientTCP(char * hostname, long port) {
     printf("[client] le client se connecte au serveur %s sur le port %ld\n",hostname,port);
@@ -40,6 +48,7 @@ void clientTCP(char * hostname, long port) {
     free(serv_addr);
     // send message to server
     listFilesC(sockfd);
+    closeConnection(sockfd);
 }
 
 // fonction de fermeture de la connexion
@@ -78,21 +87,21 @@ void listFilesC(int sockfd){
     free(infos);
 
     // lire la réponse du serveur pour savoir le nombre de fichiers
-    unsigned char* buffer = (unsigned char*) malloc(MAX_TRAME_SIZE);
-    n = read(sockfd, buffer, MAX_TRAME_SIZE);
+    unsigned char* bufferList = (unsigned char*) malloc(TRAME_SIZE);
+    n = read(sockfd, bufferList, TRAME_SIZE);
     if(n < 0) {
         perror("ERROR pendant la lecture du socket");
         exit(1);
     }
-
-    PInfoTrame infosReponse = decodeInfosTrame(buffer);
+    PInfoTrame infosReponse = decodeInfosTrame(bufferList);
     unsigned char nbFiles = infosReponse->nbFiles;
+    free(bufferList);
     free(infosReponse);
-    free(buffer);
 
     // lire les noms des fichiers
+    printf("nbFiles : %d\n",nbFiles);
     for(int i = 0; i < nbFiles; i++){
-        buffer = (unsigned char*) malloc(MAX_TRAME_SIZE);
+        unsigned char * buffer = (unsigned char*) malloc(TRAME_SIZE);
         n = read(sockfd, buffer, TRAME_SIZE);
         if(n < 0) {
             perror("ERROR pendant la lecture du socket");
@@ -100,10 +109,11 @@ void listFilesC(int sockfd){
         }
         PInfoTrame infosReponse = decodeInfosTrame(buffer);
         printf("size : %d\n",infosReponse->sizeInfos);
-        n = read(sockfd, buffer, MAX_TRAME_SIZE);
-        decodeInfosTrame_Infos(infosReponse,buffer,MAX_TRAME_SIZE);
-        printf("File : %s\n",infosReponse->infos);
-        free(infosReponse);
+        
+        unsigned char * bufferInfo = (unsigned char*) malloc(infosReponse->sizeInfos);
+        n = read(sockfd, bufferInfo, infosReponse->sizeInfos);
+        decodeInfosTrame_Infos(infosReponse,bufferInfo,infosReponse->sizeInfos);
+        printf("File : %s\n",infosReponse->infos);        
     }
 
 }

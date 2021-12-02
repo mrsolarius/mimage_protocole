@@ -10,6 +10,10 @@
 #include <netdb.h>
 #include <sys/wait.h>
 
+#include "client.h"
+#include "server.h"
+
+/*
 //Make while loop that close when they want
 void child_process(int serviceSockfd){   
     int buffer;
@@ -147,6 +151,7 @@ void client_tcp(char * hostname, long port) {
     // close connection
     close(sockfd);
 }
+*/
 
 //Main that call server_tcp or client_tcp function depending on the argument given in the command line
 int main(int argc, char *argv[]){
@@ -168,7 +173,7 @@ int main(int argc, char *argv[]){
             printf("Usage : %s server <port>\n",argv[0]);
             exit(1);
         }
-        server_tcp(*port);
+        serverTCP(*port);
     }
     else if (strcmp(argv[1], "client") == 0)
     {
@@ -182,7 +187,7 @@ int main(int argc, char *argv[]){
             printf("Usage : %s client <adresse> <port>\n",argv[0]);
             exit(1);
         }
-        client_tcp(argv[2],*port);
+        clientTCP(argv[2],*port);
     }
     else
     {

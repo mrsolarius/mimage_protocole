@@ -31,7 +31,12 @@ bool checkInfoTrameError(PInfoTrame infosTrame){
         ((infosTrame->status>0x45)&&(infosTrame->status<0x50))){
         SPP_Erno=STATUS_ERROR;
         test=true;
-    }else
+    }
+    return test;
+}
+
+bool checkInfoTrameSizeError(PInfoTrame infosTrame){
+    bool test=false;
     if (infosTrame->infos == NULL)
     {
         if (infosTrame->sizeInfos != 0)
@@ -98,31 +103,44 @@ unsigned char* encodeInfosTrame(PInfoTrame infosTrame){
     //on met en place la structure de la trame après l'avoir déclarée
     unsigned char * trame;
     if(infosTrame->sizeInfos>0){
-        trame = malloc(sizeof(char)*4 + strlen(infosTrame->infos)+1);
+        trame = malloc(sizeof(char)*6 + strlen(infosTrame->infos)+1);
     }else{
-        trame = malloc(sizeof(char)*4);
+        trame = malloc(sizeof(char)*6);
     }
     trame[0]=infosTrame->cmd;
     trame[1]=infosTrame->status;
     trame[2]=infosTrame->nbFiles;
     trame[3]=infosTrame->sizeInfos;
+    trame[4]=0;
+    trame[5]=0;
     for (int comp=0; comp < (infosTrame->sizeInfos); comp++){
-        trame[comp+4] = infosTrame->infos[comp];
+        trame[comp+6] = infosTrame->infos[comp];
     }
     return trame;
 }
 
-PInfoTrame decodeInfosTrame(unsigned char* infos, unsigned int size){
-    PInfoTrame TrameDecod = (PInfoTrame) malloc(sizeof(InfosTrame));
-    TrameDecod->cmd=infos[0];
-    TrameDecod->status=infos[1];
-    TrameDecod->nbFiles=infos[2];
-    TrameDecod->sizeInfos=infos[3];
-    TrameDecod->infos = malloc(sizeof(char)*(TrameDecod->sizeInfos));
-    for (int comp=0;comp<TrameDecod->sizeInfos;comp++){
-        TrameDecod->infos[comp]=infos[comp+4];
+PInfoTrame decodeInfosTrame(unsigned char* infos){
+    PInfoTrame trameDecod = (PInfoTrame) malloc(sizeof(InfosTrame));
+    trameDecod->cmd=infos[0];
+    trameDecod->status=infos[1];
+    trameDecod->nbFiles=infos[2];
+    trameDecod->sizeInfos=infos[3];
+    // on check tous les problèmes potentiels pouvant survenir
+    if (checkInfoTrameError(trameDecod)==true){
+        trameDecod->cmd=0xFF; 
     }
-    return TrameDecod;
+    return trameDecod;
+}
+
+//fonction qui prend une structure en parametre qui remplit le champ info avec le tableau de char en 2eme param
+void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size) {
+    infoTrame->infos = malloc(sizeof(char)*(size));
+    for (int comp=0; comp < size; comp++) {
+        infoTrame->infos[comp] = infos[comp];
+    }
+    if (checkInfoTrameSizeError(infoTrame)==true){
+        infoTrame->cmd=0xFF;
+    }
 }
 
 unsigned char* encodeDataHead(PDataTrame dataTrame){
@@ -154,7 +172,7 @@ PDataTrame decodeDataHead(unsigned char * data, int dataFd){
     trameDecod->sizeData|=(data[4]& 0xFF)<<8;
     trameDecod->sizeData|=(data[5]& 0xFF);
     trameDecod->dataFd=dataFd;
-    // on check tous les problèmes potentiel pouvant subevenir
+    // on check tous les problèmes potentiels pouvant survenir
     if (checkDataTrameError(trameDecod)==true){
         trameDecod->cmd=0xFF; 
     }

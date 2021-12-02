@@ -159,7 +159,7 @@ bool encodeDataHead_itShouldReturnThrowError(){
 // Pour le cas de CMD_ERROR
 bool decodeDataHead_itShouldReturnCmdERORR(){
     SPP_Erno = -1;
-    char trame[]={0xFD,NO_FOUND_FILE,0b0,0b0,0b0,0b0};
+    unsigned char trame[]={0xFD,NO_FOUND_FILE,0b0,0b0,0b0,0b0};
     PDataTrame dataTrame = decodeDataHead(trame,1);
     return (SPP_Erno == CMD_ERROR) && (dataTrame->cmd == 0xff);
 }
@@ -167,7 +167,7 @@ bool decodeDataHead_itShouldReturnCmdERORR(){
 // Pour le cas de EMPTY_STATUS
 bool decodeDataHead_itShouldReturnEMPTY_STATUSError(){
     SPP_Erno = -1;
-    char trame[]={DOWNLOAD_FILE_DATA,0xFD,0b0,0b0,0b0};
+    unsigned char trame[]={DOWNLOAD_FILE_DATA,0xFD,0b0,0b0,0b0};
     PDataTrame dataTrame = decodeDataHead(trame,1);
     return (SPP_Erno == STATUS_ERROR) && (dataTrame->cmd == 0xff);
 
@@ -176,7 +176,7 @@ bool decodeDataHead_itShouldReturnEMPTY_STATUSError(){
 // Pour verifier que la trame est bien décoder
 bool decodeDataHead_itShouldPassWithData(){
     SPP_Erno = -1;
-    char trame[]={DOWNLOAD_FILE_DATA,SUCCESS,0b10001010,0b01001111,0b00011111,0b00000001};
+    unsigned char trame[]={DOWNLOAD_FILE_DATA,SUCCESS,0b10001010,0b01001111,0b00011111,0b00000001};
     PDataTrame dataTrame = decodeDataHead(trame,1);
     return (SPP_Erno == -1) && (
         (dataTrame->cmd == DOWNLOAD_FILE_DATA)&&
@@ -189,7 +189,7 @@ bool decodeDataHead_itShouldPassWithData(){
 // Pour verifier que la trame est bien décoder
 bool decodeDataHead_itShouldPassWithError(){
     SPP_Erno = -1;
-    char trame[]={DOWNLOAD_FILE_DATA,INTERNAL_ERROR,0,0,0,0};
+    unsigned char trame[]={DOWNLOAD_FILE_DATA,INTERNAL_ERROR,0,0,0,0};
     PDataTrame dataTrame = decodeDataHead(trame,1);
     return (SPP_Erno == -1) && (
         (dataTrame->cmd == DOWNLOAD_FILE_DATA)&&
@@ -263,54 +263,6 @@ bool checkInfoTrameError_itShouldRetunrWRONGSIZEError(){
 // /*----------------FIN Test de la fonction checkInfoTrameError-----------------*/
 
 // /*----------------Debut Test de la fonction encodeInfosTrame-----------------*/
-
-// // Pour le cas de EMPTY_CMD
-// bool encodeInfosTrame_itShouldReturnCmdEMPTYCMDError(){
-//     SPP_Erno = -1;
-//     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
-//     infos->status = SUCCESS;
-//     infos->nbFiles = 0;
-//     infos->sizeInfos=0;
-//     char* infosTrame = encodeInfosTrame(infos);
-//     free(infos);
-//     return (SPP_Erno == EMPTY_CMD) && (infosTrame[0] == 0xff);
-// }
-
-// // Pour le cas de CMD_ERROR
-// bool encodeInfosTrame_itShouldRetunrCMDERRORError(){
-//     SPP_Erno = -1;
-//     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
-//     infos->cmd = 0xF0;
-//     infos->status = SUCCESS;
-//     infos->sizeInfos = 0;
-//     char* infosTrame =encodeInfosTrame(infos);
-//     free(infos);
-//     return (SPP_Erno == CMD_ERROR) && (infosTrame[0] == 0xff);
-// }
-
-// // Pour le cas de EMPTY_STATUS
-// bool encodeInfosTrame_itShouldRetunrEMPTYSTATUSError(){
-//     SPP_Erno = -1;
-//     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
-//     infos->cmd = 0xF0;
-//     infos->sizeInfos = 0;
-//     char* infosTrame = encodeInfosTrame(infos);
-//     free(infos);
-//     return (SPP_Erno == EMPTY_STATUS) && (infosTrame[1] == 0xff);
-// }
-
-// // Pour le cas de WRONG_SIZE
-// bool encodeInfosTrame_itShouldRetunrWRONGSIZEError(){
-//     SPP_Erno = -1;
-//     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
-//     infos->cmd = 0xF0;
-//     infos->status = SUCCESS;
-//     infos->sizeInfos = -1;
-//     char* infosTrame = encodeInfosTrame(infos);
-//     free(infos);
-//     return (SPP_Erno == WRONG_SIZE) && (infosTrame[0] == 0xff);
-// }
-
 // Pour le cas d'envoie de data
 bool encodeInfosTrame_itShouldReturnCorrectFrame(){
     SPP_Erno = -1;
@@ -327,12 +279,12 @@ bool encodeInfosTrame_itShouldReturnCorrectFrame(){
         (infosTrame[1]==SUCCESS)&&
         (infosTrame[2]==0)&&
         (infosTrame[3]==6)&&
-        (infosTrame[4]=='a')&&
-        (infosTrame[5]=='z')&&
-        (infosTrame[6]=='e')&&
-        (infosTrame[7]=='r')&&
-        (infosTrame[8]=='t')&&
-        (infosTrame[9]=='y')
+        (infosTrame[6]=='a')&&
+        (infosTrame[7]=='z')&&
+        (infosTrame[8]=='e')&&
+        (infosTrame[9]=='r')&&
+        (infosTrame[10]=='t')&&
+        (infosTrame[11]=='y')
     );
 }
 
@@ -369,7 +321,81 @@ bool encodeInfosTrame_itShouldReturnThrowError(){
 /*----------------FIN Test de la fonction encodeInfosTrame-----------------*/
 
 /*----------------Debut Test de la fonction decodeInfosTrame-----------------*/
+// Pour le cas d'envoie de data
+bool decodeInfosTrame_itShouldReturnCorrectFrame(){
+    SPP_Erno = -1;
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*6);
+    infosTrame[0]=DOWNLOAD_FILE_NAME;
+    infosTrame[1]=SUCCESS;
+    infosTrame[2]=0;
+    infosTrame[3]=6;    //on prend en compte les 2 octets de bourrage en fin d'entete, on passe donc de 3 à 6
+    PInfoTrame trame = decodeInfosTrame(infosTrame);
+    infosTrame = malloc(sizeof(unsigned char)*255);
+    infosTrame[0]='a';
+    infosTrame[1]='z';
+    infosTrame[2]='e';
+    infosTrame[3]='r';
+    infosTrame[4]='t';
+    infosTrame[5]='y';
+    decodeInfosTrame_Infos(trame, infosTrame, 255);
+    free(infosTrame);
+    return (
+        (trame->cmd==DOWNLOAD_FILE_NAME)&&
+        (trame->status==SUCCESS)&&
+        (trame->nbFiles==0)&&
+        (trame->sizeInfos==6)&&
+        (strcmp(trame->infos,"azerty")==0)
+    );
+}
 
+// pour le cas d'envoie d'erreur
+bool decodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo(){
+    SPP_Erno = -1;
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*6);
+    infosTrame[0]=GET_FILE_DATA;
+    infosTrame[1]=SUCCESS;
+    infosTrame[2]=0;
+    infosTrame[3]=0;
+    PInfoTrame trame = decodeInfosTrame(infosTrame);
+    free(infosTrame);
+    return (
+        (trame->cmd == GET_FILE_DATA)&&
+        (trame->status == SUCCESS)&&
+        (trame->sizeInfos == 0)&&
+        (trame->nbFiles == 0)
+    );
+}
+
+bool decodeInfosTrame_itShouldReturnCmdERORR(){
+    SPP_Erno = -1;
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*6);
+    infosTrame[0]=0xfd;
+    infosTrame[1]=SUCCESS;
+    infosTrame[2]=0;
+    infosTrame[3]=0;
+    PInfoTrame trame = decodeInfosTrame(infosTrame);
+    free(infosTrame);
+    return ((trame->cmd==0xff)&&(SPP_Erno==CMD_ERROR));
+}
+
+bool decodeInfosTrame_Infos_itShouldReturnWrongSizeERORR() {
+    SPP_Erno = -1;
+    PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
+    infos->cmd = DOWNLOAD_FILE_NAME;
+    infos->status = SUCCESS;
+    infos->sizeInfos = 20;
+    infos->nbFiles = 0;
+    infos->infos = "azerty";
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*12);
+    infosTrame[0]='a';
+    infosTrame[1]='z';
+    infosTrame[2]='e';
+    infosTrame[3]='r';
+    infosTrame[4]='t';
+    infosTrame[5]='y';
+    decodeInfosTrame_Infos(infos,infosTrame,255);
+    return (infos->cmd==0xff)&&(SPP_Erno==WRONG_SIZE);
+}
 
 /*----------------FIN Test de la fonction decodeInfosTrame-----------------*/
 
@@ -395,7 +421,7 @@ void testSPP(){
     printTitle("Test de la fonction decodeDataHead");
     passTest("decodeDataHead","it should return CMD_ERROR",decodeDataHead_itShouldReturnCmdERORR());
     passTest("decodeDataHead","it should return EMPTY_STATUS",decodeDataHead_itShouldReturnEMPTY_STATUSError());;
-    passTest("decodeDataHead","it should return Correct Frame With",decodeDataHead_itShouldPassWithData());
+    passTest("decodeDataHead","it should return Correct Frame With data",decodeDataHead_itShouldPassWithData());
     passTest("decodeDataHead","it should return Correct Error Frame",decodeDataHead_itShouldPassWithError());
         
     printTitle("Test de la fonction checkInfoTrameError");
@@ -403,12 +429,17 @@ void testSPP(){
     passTest("checkInfoTrameError","it should return CMD_ERROR",checkInfoTrameError_itShouldRetunrCMDERRORError());
     passTest("checkInfoTrameError","it should return EMPTY_STATUS",checkInfoTrameError_itShouldRetunrEMPTYSTATUSError());
     passTest("checkInfoTrameError","it should return STATUS_ERROR",checkInfoTrameError_itShouldReturnSTATUSERROR());
-    passTest("checkInfoTrameError","it should return WRONG_SIZE",checkInfoTrameError_itShouldRetunrWRONGSIZEError());
     
     printTitle("Test de la fonction encodeInfosTrame");
     passTest("encodeInfosTrame","it should return Correct Frame",encodeInfosTrame_itShouldReturnCorrectFrame());
     passTest("encodeInfosTrame","it should return Correct Frame without info",encodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo());
     passTest("encodeInfosTrame","it should return Error CMD",encodeInfosTrame_itShouldReturnThrowError());
+    
+    printTitle("Test de la fonction decodeInfosTrame && decodeInfosTrame_Infos");
+    passTest("decodeInfosTrame && decodeInfosTrame_Infos","it should return correct frame",decodeInfosTrame_itShouldReturnCorrectFrame());
+    passTest("decodeInfosTrame","it should return correct frame without info",decodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo());
+    passTest("decodeInfosTrame","it should return CMD_ERROR",decodeInfosTrame_itShouldReturnCmdERORR());
+    passTest("decodeInfosTrame_Infos","it should return WRONG_SIZE_ERROR",decodeInfosTrame_Infos_itShouldReturnWrongSizeERORR());
     
 }
 

@@ -167,7 +167,7 @@ void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size
 
 unsigned char* encodeDataHead(PDataTrame dataTrame){
     unsigned char *error = malloc(sizeof(unsigned char));
-    // on check tous les problèmes potentiel pouvant subevenir
+    // on check tous les problèmes potentiel pouvant survenir
     if (checkDataTrameError(dataTrame)==true){
         error[0]=0xff;
         return error;

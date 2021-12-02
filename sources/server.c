@@ -21,7 +21,7 @@ void print_hex_0(const unsigned char *s)
 }
 void handlerChildDeath(){
     wait(NULL);
-    printf("[server] le socket applicatif et mort\n");
+    printf("[server] le socket applicatif est mort\n");
 }
 
 // Fonction de gestion du socket applicatif
@@ -38,7 +38,7 @@ void serviceProcess(int serviceSockfd){
             exit(1);
         }
         if(checkTypeFrame(frame) == 1){
-            printf("[server] Trame de type 1 recu\n");
+            printf("[server] Trame de type DataFrame recu\n");
             PDataTrame data = decodeDataHead(frame,6);
             if(data->cmd==0xff){
                 SPP_perror("Erreur : le décodage trame");
@@ -46,7 +46,7 @@ void serviceProcess(int serviceSockfd){
             
         }
         else if(checkTypeFrame(frame) == 2){
-            printf("[server] Trame de type 2 recu\n");
+            printf("[server] Trame de type InfoFrame recu\n");
             PInfoTrame inf = decodeInfosTrame(frame);
             if(inf->cmd==0xff){
                 SPP_perror("Erreur : le décodage trame");
@@ -60,6 +60,10 @@ void serviceProcess(int serviceSockfd){
             if(inf->cmd== GET_LIST){
                 printf("[server] demande de liste\n");
                 listFilesS(serviceSockfd);
+            }
+            if(inf->cmd == GET_FILE_DATA){
+                printf("[server] demande de fichier\n");
+                downloadFileS(serviceSockfd, inf);
             }
         }
         else if(checkTypeFrame(frame) == -1){
@@ -138,7 +142,6 @@ void serverTCP(int port){
 
 }
 
-
 void listFilesS(int sockfd){
     int count_Files = countFiles("tests/types/");
     PInfoTrame inf = (PInfoTrame)malloc(sizeof(PInfoTrame));
@@ -174,6 +177,32 @@ void listFilesS(int sockfd){
             exit(1);
         }
         free(frame);
+        free(info->infos);
         free(info);
     }
+}
+
+void downloadFileS(int sockfd, PInfoTrame info) {
+    unsigned char * bufferInfo = (unsigned char*) malloc(info->sizeInfos);
+    n = read(sockfd, bufferInfo, info->sizeInfos);
+    decodeInfosTrame_Infos(info,bufferInfo,info->sizeInfos);
+    free(bufferInfo);
+    printf("[server] demande de fichier %s\n",info->infos);
+    
+    // open file
+    FILE * f = fopen(info->infos, "rb");
+    //get size of file in bytes in size var
+    fseek(f, 0, SEEK_END); // seek to end of file
+    int size = ftell(f); // get current file pointer
+    fseek(f, 0, SEEK_SET); // seek back to beginning of file
+    
+    PDataTrame data = (PDataTrame)malloc(sizeof(DataTrame));
+    data->cmd = UPLOAD_FILE_DATA;
+    data->status = SUCCESS;
+    data->sizeData = size;
+    
+
+
+    free(info->infos);
+    free(info);
 }

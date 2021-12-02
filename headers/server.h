@@ -7,4 +7,6 @@ void serverTCP(int port);
 
 void listFilesS(int sockfd);
 
+void downloadFileS(int sockfd, PInfoTrame info);
+
 #endif // SERVER_H

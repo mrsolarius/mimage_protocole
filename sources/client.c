@@ -87,6 +87,21 @@ void listFiles(int sockfd){
 
     PInfoTrame infosReponse = decodeInfosTrame(buffer,MAX_TRAME_SIZE);
     unsigned char nbFiles = infosReponse->nbFiles;
+    free(infosReponse);
+    free(buffer);
 
+    // lire les noms des fichiers
+    for(int i = 0; i < nbFiles; i++){
+        buffer = (unsigned char*) malloc(MAX_TRAME_SIZE);
+        n = read(sockfd, buffer, MAX_TRAME_SIZE);
+        if(n < 0) {
+            perror("ERROR pendant la lecture du socket");
+            exit(1);
+        }
+        PInfoTrame infosReponse = decodeInfosTrame(buffer,MAX_TRAME_SIZE);
+        printf("%s\n",infosReponse->infos);
+        free(infosReponse);
+        free(buffer);
+    }
 
 }

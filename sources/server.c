@@ -51,7 +51,7 @@ void serviceProcess(int serviceSockfd){
             }
             if(inf->cmd== GET_LIST){
                 printf("[server] demande de liste\n");
-                listFiles(serviceSockfd);
+                listFilesS(serviceSockfd);
             }
         }
         else if(checkTypeFrame(frame) == -1){
@@ -131,13 +131,13 @@ void serverTCP(int port){
 }
 
 
-void listFiles(int sockfd){
-    int countFiles = countFiles("tests/types/");
-    PInfoTrame inf = (PInfoTrame)malloc(sizeof(InfoTrame));
-    inf->cmd = LIST_FILES;
+void listFilesS(int sockfd){
+    int count_Files = countFiles("tests/types/");
+    PInfoTrame inf = (PInfoTrame)malloc(sizeof(PInfoTrame));
+    inf->cmd = LIST_SIZE;
     inf->status = SUCCESS;
-    inf->size = 0;
-    inf->nbFiles = countFiles;
+    inf->sizeInfos = 0;
+    inf->nbFiles = count_Files;
     inf->infos = NULL;
 
     unsigned char * frame = encodeInfosTrame(inf);
@@ -149,21 +149,21 @@ void listFiles(int sockfd){
     free(frame);
     free(inf);
 
-    char * * files = getFiles("tests/types/",countFiles);
-    for(int i = 0; i < countFiles; i++){
-        PDataTrame data = (PDataTrame)malloc(sizeof(DataTrame));
-        data->cmd = DOWNLOAD_FILE_INFO;
-        data->status = SUCCESS;
-        data->size = strlen(files[i]);
-        data->nbFiles = 1;
-        data->data = files[i];
-        frame = encodeDataHead(data);
-        int n = write(sockfd, frame, TRAME_SIZE+data->size);
+    char * * files = getFiles("tests/types/",count_Files);
+    for(int i = 0; i < count_Files; i++){
+        PInfoTrame info = (PInfoTrame)malloc(sizeof(InfosTrame));
+        info->cmd = DOWNLOAD_FILE_NAME;
+        info->status = SUCCESS;
+        info->sizeInfos = strlen(files[i]);
+        info->nbFiles = 1;
+        info->infos = files[i];
+        frame = encodeInfosTrame(info);
+        int n = write(sockfd, frame, TRAME_SIZE+info->sizeInfos);
         if (n < 0) {
             perror("[server] Erreur de lecture sur le socket applicatif");
             exit(1);
         }
         free(frame);
-        free(data);
+        free(info);
     }
 }

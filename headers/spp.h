@@ -3,8 +3,7 @@
 #include <stdbool.h>
 
 #define TRAME_SIZE 6
-//Correspond à TRAME_SIZE + la longeur maximum d'un fichier qui et de 255 bits
-#define MAX_TRAME_SIZE 261 
+#define MAX_TRAME_SIZE 255 
 #define BUFFER_SIZE 1024
 /**
  * Equivalent de erno

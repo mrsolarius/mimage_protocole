@@ -39,7 +39,7 @@ void clientTCP(char * hostname, long port) {
     }
     free(serv_addr);
     // send message to server
-
+    listFilesC(sockfd);
 }
 
 // fonction de fermeture de la connexion
@@ -62,7 +62,7 @@ void closeConnection(int sockfd) {
     exit(0);
 }
 
-void listFiles(int sockfd){
+void listFilesC(int sockfd){
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = GET_LIST;
     infos->status = SUCCESS;
@@ -85,7 +85,7 @@ void listFiles(int sockfd){
         exit(1);
     }
 
-    PInfoTrame infosReponse = decodeInfosTrame(buffer,MAX_TRAME_SIZE);
+    PInfoTrame infosReponse = decodeInfosTrame(buffer);
     unsigned char nbFiles = infosReponse->nbFiles;
     free(infosReponse);
     free(buffer);
@@ -93,15 +93,17 @@ void listFiles(int sockfd){
     // lire les noms des fichiers
     for(int i = 0; i < nbFiles; i++){
         buffer = (unsigned char*) malloc(MAX_TRAME_SIZE);
-        n = read(sockfd, buffer, MAX_TRAME_SIZE);
+        n = read(sockfd, buffer, TRAME_SIZE);
         if(n < 0) {
             perror("ERROR pendant la lecture du socket");
             exit(1);
         }
-        PInfoTrame infosReponse = decodeInfosTrame(buffer,MAX_TRAME_SIZE);
-        printf("%s\n",infosReponse->infos);
+        PInfoTrame infosReponse = decodeInfosTrame(buffer);
+        printf("size : %d\n",infosReponse->sizeInfos);
+        n = read(sockfd, buffer, MAX_TRAME_SIZE);
+        decodeInfosTrame_Infos(infosReponse,buffer,MAX_TRAME_SIZE);
+        printf("File : %s\n",infosReponse->infos);
         free(infosReponse);
-        free(buffer);
     }
 
 }

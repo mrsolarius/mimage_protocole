@@ -1,5 +1,5 @@
-#ifndef type_h
-#define type_h
+#ifndef utils_h
+#define utils_h
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -10,5 +10,7 @@
  * et lit dans l'entrée standard pour récupérer 
  * le type de fichier
 */
-char* getType(char * filePath) ;
-#endif //type_h
+char* getType(char * filePath);
+int countFiles(char * path);
+char ** getFiles(char * path, int nbFiles);
+#endif //utils_h

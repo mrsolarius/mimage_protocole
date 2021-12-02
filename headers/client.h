@@ -2,5 +2,5 @@
 #define CLIENT_H
 void clientTCP(char * hostname, long port);
 void closeConnection(int sockfd);
-void listFiles(int sockfd);
+void listFilesC(int sockfd);
 #endif // CLIENT_H

@@ -122,7 +122,14 @@ unsigned char* encodeInfosTrame(PInfoTrame);
 *       WRONG_SIZE=6,
 *       STATUS_ERROR=7
 */
-PInfoTrame decodeInfosTrame(unsigned char* infos, unsigned int size);
+PInfoTrame decodeInfosTrame(unsigned char* infos);
+
+/**
+*   Nom: decodeInfosTrame - Décode le contenu de info dans la trame.
+*   Description :
+*       Récupère les informations contenues dans le champ info de la structure et les décode dans le format de la structure.
+*/
+void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size);
 
 /**
 *   Nom: checkInfoTrameError - Test les erreurs potentiels de la trame infotrame et positionne SPP_ERNO.
@@ -131,16 +138,24 @@ PInfoTrame decodeInfosTrame(unsigned char* infos, unsigned int size);
 *       Si la valeur de cmd ne correspond pas à la liste de valeur possible, alors il envoie un message d'erreur 1 de type CMD_ERROR.
 *       Si la valeur de cmd est vide, alors il envoie un message d'erreur 0 de type EMPTY_CMD.
 *       Si la valeur de status est vide, alors il envoie un message d'erreur 2 de type EMPTY_STATUS.
-*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.
-*       Si infosTrame a un sizeInfos qui est différent de sa taille, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
+*       Si la valeur de status ne correspond pas aux valeurs de la liste, alors il envoie un message d'erreur 7 de type STATUS_ERROR.    
 *      @param char* data corresponds au headers de la trame.
 *       CMD_ERROR=1,
 *       EMPTY_CMD=0,
 *       EMPTY_STATUS=2,
-*       STATUS_ERROR=7,
+*       STATUS_ERROR=7
+*/
+bool checkInfoTrameError(PInfoTrame infosTrame);
+
+/**
+*   Nom: checkInfoTrameError - Test les erreurs potentiels de taille de l'info de la trame infotrame et positionne SPP_ERNO.
+*   Description :
+*       Test la cohérences des valeurs et renvoie une booléen indiquent si une valeur ne l'est pas.
+*       Si infosTrame a un sizeInfos qui est différent de sa taille, alors il envoie un message d'erreur 6 de type WRONG_SIZE.      
+*      @param char* data corresponds au headers de la trame.
 *       WRONG_SIZE=6
 */
-bool checkInfoTrameError(PInfoTrame);
+bool checkInfoTrameSizeError(PInfoTrame infosTrame);
 
 /*-----------------------------------------FIN_INFOS_TRAME---------------------------------------------*/
 

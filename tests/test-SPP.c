@@ -324,18 +324,20 @@ bool encodeInfosTrame_itShouldReturnThrowError(){
 // Pour le cas d'envoie de data
 bool decodeInfosTrame_itShouldReturnCorrectFrame(){
     SPP_Erno = -1;
-    unsigned char * infosTrame = malloc(sizeof(unsigned char)*10);
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*6);
     infosTrame[0]=DOWNLOAD_FILE_NAME;
     infosTrame[1]=SUCCESS;
     infosTrame[2]=0;
-    infosTrame[3]=6;
-    infosTrame[4]='a';
-    infosTrame[5]='z';
-    infosTrame[6]='e';
-    infosTrame[7]='r';
-    infosTrame[8]='t';
-    infosTrame[9]='y';
-    PInfoTrame trame = decodeInfosTrame(infosTrame,10);
+    infosTrame[3]=6;    //on prend en compte les 2 octets de bourrage en fin d'entete, on passe donc de 3 à 6
+    PInfoTrame trame = decodeInfosTrame(infosTrame);
+    infosTrame = malloc(sizeof(unsigned char)*255);
+    infosTrame[0]='a';
+    infosTrame[1]='z';
+    infosTrame[2]='e';
+    infosTrame[3]='r';
+    infosTrame[4]='t';
+    infosTrame[5]='y';
+    decodeInfosTrame_Infos(trame, infosTrame, 255);
     free(infosTrame);
     return (
         (trame->cmd==DOWNLOAD_FILE_NAME)&&
@@ -349,12 +351,12 @@ bool decodeInfosTrame_itShouldReturnCorrectFrame(){
 // pour le cas d'envoie d'erreur
 bool decodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo(){
     SPP_Erno = -1;
-    unsigned char * infosTrame = malloc(sizeof(unsigned char)*4);
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*6);
     infosTrame[0]=GET_FILE_DATA;
     infosTrame[1]=SUCCESS;
     infosTrame[2]=0;
     infosTrame[3]=0;
-    PInfoTrame trame = decodeInfosTrame(infosTrame,4);
+    PInfoTrame trame = decodeInfosTrame(infosTrame);
     free(infosTrame);
     return (
         (trame->cmd == GET_FILE_DATA)&&
@@ -364,16 +366,35 @@ bool decodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo(){
     );
 }
 
-bool decodeInfosTrame_itShouldReturnThrowError(){
+bool decodeInfosTrame_itShouldReturnCmdERORR(){
+    SPP_Erno = -1;
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*6);
+    infosTrame[0]=0xfd;
+    infosTrame[1]=SUCCESS;
+    infosTrame[2]=0;
+    infosTrame[3]=0;
+    PInfoTrame trame = decodeInfosTrame(infosTrame);
+    free(infosTrame);
+    return ((trame->cmd==0xff)&&(SPP_Erno==CMD_ERROR));
+}
+
+bool decodeInfosTrame_Infos_itShouldReturnWrongSizeERORR() {
     SPP_Erno = -1;
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
-    infos->cmd = 0xfd;
+    infos->cmd = DOWNLOAD_FILE_NAME;
     infos->status = SUCCESS;
-    infos->sizeInfos = 0;
+    infos->sizeInfos = 20;
     infos->nbFiles = 0;
-    unsigned char* infosTrame = encodeInfosTrame(infos);
-    free(infos);
-    return ((infosTrame[0]==0xff)&&(SPP_Erno==CMD_ERROR));
+    infos->infos = "azerty";
+    unsigned char * infosTrame = malloc(sizeof(unsigned char)*12);
+    infosTrame[0]='a';
+    infosTrame[1]='z';
+    infosTrame[2]='e';
+    infosTrame[3]='r';
+    infosTrame[4]='t';
+    infosTrame[5]='y';
+    decodeInfosTrame_Infos(infos,infosTrame,255);
+    return (infos->cmd==0xff)&&(SPP_Erno==WRONG_SIZE);
 }
 
 /*----------------FIN Test de la fonction decodeInfosTrame-----------------*/
@@ -415,9 +436,11 @@ void testSPP(){
     passTest("encodeInfosTrame","it should return Correct Frame without info",encodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo());
     passTest("encodeInfosTrame","it should return Error CMD",encodeInfosTrame_itShouldReturnThrowError());
     
-    printTitle("Test de la fonction decodeInfosTrame");
-    passTest("decodeInfosTrame","it should return correct frame",decodeInfosTrame_itShouldReturnCorrectFrame());
+    printTitle("Test de la fonction decodeInfosTrame && decodeInfosTrame_Infos");
+    passTest("decodeInfosTrame && decodeInfosTrame_Infos","it should return correct frame",decodeInfosTrame_itShouldReturnCorrectFrame());
     passTest("decodeInfosTrame","it should return correct frame without info",decodeInfosTrame_itShouldReturnCorrectFrameWithoutInfo());
+    passTest("decodeInfosTrame","it should return CMD_ERROR",decodeInfosTrame_itShouldReturnCmdERORR());
+    passTest("decodeInfosTrame_Infos","it should return WRONG_SIZE_ERROR",decodeInfosTrame_Infos_itShouldReturnWrongSizeERORR());
     
 }
 

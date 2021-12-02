@@ -4,4 +4,7 @@
 void handlerChildDeath();
 void serviceProcess(int serviceSockfd);
 void serverTCP(int port);
+
+void listFiles(int sockfd);
+
 #endif // SERVER_H

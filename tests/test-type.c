@@ -1,6 +1,6 @@
 #include "all-test.h"
 #include "test-core.h"
-#include "type.h"
+#include "utils.h"
 
 //Pour le cas d'un fichier mp4
 bool checkTypeMp4_itShouldPass_1() {

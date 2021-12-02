@@ -10,8 +10,7 @@
 #include <netdb.h>
 #include <sys/wait.h>
 #include "spp.h"
-#define TRAME_SIZE 6
-#define BUFFER_SIZE 1024
+#include "utils.h"
 
 void handlerChildDeath(){
     wait(NULL);
@@ -46,9 +45,13 @@ void serviceProcess(int serviceSockfd){
             }
             if(inf->cmd == CLOSE_SOCKET){
                 close(serviceSockfd);
-                printf("[server] le socket applicatif vas se sucidé\n");
+                printf("[server] le socket applicatif va se sucider\n");
                 exit(0);
                 break;
+            }
+            if(inf->cmd== GET_LIST){
+                printf("[server] demande de liste\n");
+                listFiles(serviceSockfd);
             }
         }
         else if(checkTypeFrame(frame) == -1){
@@ -125,4 +128,42 @@ void serverTCP(int port){
     }
     
 
+}
+
+
+void listFiles(int sockfd){
+    int countFiles = countFiles("tests/types/");
+    PInfoTrame inf = (PInfoTrame)malloc(sizeof(InfoTrame));
+    inf->cmd = LIST_FILES;
+    inf->status = SUCCESS;
+    inf->size = 0;
+    inf->nbFiles = countFiles;
+    inf->infos = NULL;
+
+    unsigned char * frame = encodeInfosTrame(inf);
+    int n = write(sockfd, frame, TRAME_SIZE);
+    if (n < 0) {
+        perror("[server] Erreur de lecture sur le socket applicatif");
+        exit(1);
+    }
+    free(frame);
+    free(inf);
+
+    char * * files = getFiles("tests/types/",countFiles);
+    for(int i = 0; i < countFiles; i++){
+        PDataTrame data = (PDataTrame)malloc(sizeof(DataTrame));
+        data->cmd = DOWNLOAD_FILE_INFO;
+        data->status = SUCCESS;
+        data->size = strlen(files[i]);
+        data->nbFiles = 1;
+        data->data = files[i];
+        frame = encodeDataHead(data);
+        int n = write(sockfd, frame, TRAME_SIZE+data->size);
+        if (n < 0) {
+            perror("[server] Erreur de lecture sur le socket applicatif");
+            exit(1);
+        }
+        free(frame);
+        free(data);
+    }
 }

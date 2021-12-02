@@ -39,6 +39,11 @@ void clientTCP(char * hostname, long port) {
     }
     free(serv_addr);
     // send message to server
+
+}
+
+// fonction de fermeture de la connexion
+void closeConnection(int sockfd) {
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = CLOSE_SOCKET;
     infos->status = SUCCESS;
@@ -53,4 +58,35 @@ void clientTCP(char * hostname, long port) {
     }
     // close connection
     close(sockfd);
+    printf("[client] fermeture de la connexion\n");
+    exit(0);
+}
+
+void listFiles(int sockfd){
+    PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
+    infos->cmd = GET_LIST;
+    infos->status = SUCCESS;
+    infos->sizeInfos = 0;
+    infos->nbFiles = 0;
+    unsigned char* infosTrame = encodeInfosTrame(infos);
+    int n = write(sockfd, infosTrame, TRAME_SIZE);
+    if(n < 0) {
+        perror("ERROR pendant la lecture du socket");
+        exit(1);
+    }
+    free(infosTrame);
+    free(infos);
+
+    // lire la réponse du serveur pour savoir le nombre de fichiers
+    unsigned char* buffer = (unsigned char*) malloc(MAX_TRAME_SIZE);
+    n = read(sockfd, buffer, MAX_TRAME_SIZE);
+    if(n < 0) {
+        perror("ERROR pendant la lecture du socket");
+        exit(1);
+    }
+
+    PInfoTrame infosReponse = decodeInfosTrame(buffer,MAX_TRAME_SIZE);
+    unsigned char nbFiles = infosReponse->nbFiles;
+
+
 }

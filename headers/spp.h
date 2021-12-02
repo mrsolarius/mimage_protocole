@@ -122,6 +122,7 @@ unsigned char* encodeInfosTrame(PInfoTrame);
 *       WRONG_SIZE=6,
 *       STATUS_ERROR=7
 */
+
 PInfoTrame decodeInfosTrame(unsigned char* infos);
 
 /**
@@ -230,4 +231,10 @@ bool checkDataTrameError(PDataTrame dataTrame);
 
 /*-----------------------------------------FIN_DATA_TRAME---------------------------------------------*/
 
+/*-------------------------------------------DEBUT_UTILE----------------------------------------------*/
+
+//Fonction qui permet de connaitre le type de la trame reçu
+int checkTypeFrame(unsigned char* data);
+
+void SPP_perror(char* msg);
 #endif //data_trame.h

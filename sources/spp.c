@@ -137,7 +137,7 @@ void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size
         infoTrame->infos[comp] = infos[comp];
     }
     if (checkInfoTrameSizeError(infoTrame)==true){
-        infoTrame->cmd=0xFF; 
+        infoTrame->cmd=0xFF;
     }
 }
 
@@ -175,4 +175,32 @@ PDataTrame decodeDataHead(unsigned char * data, int dataFd){
         trameDecod->cmd=0xFF; 
     }
     return trameDecod;
+}
+
+int checkTypeFrame(unsigned char * data){
+    if(data[0]==UPLOAD_FILE_DATA || data[0]==DOWNLOAD_FILE_DATA){
+        return 1;
+    }
+    else if(data[0]==LIST_SIZE ||
+       data[0]==DOWNLOAD_FILE_NAME ||
+       data[0]==ACQUIT_FILE_NAME ||
+       data[0]==ACQUIT_FILE_DATA ||
+       data[0]==GET_LIST ||
+       data[0]==UPLOAD_FILE_NAME ||
+       data[0]==GET_FILE_DATA ||
+       data[0]==CLOSE_SOCKET){
+        return 2;
+    }else{
+        return -1;
+    }
+}
+
+void SPP_perror(char* msg){
+    if (SPP_Erno >= 0 && SPP_Erno <= 8) {
+        fprintf(stderr, "\n%s : %s\n", msg, DDP_errList[SPP_Erno]);
+    } else if(SPP_Erno==-1){
+        fprintf(stderr, "\n%s : Success\n", msg);
+    }else{
+        fprintf(stderr, "\n%s : Unknown error\n", msg);
+    }
 }

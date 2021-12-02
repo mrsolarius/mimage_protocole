@@ -216,17 +216,17 @@ Et une trame nommee `DATA_TRAME` qui contient l'entête du fichier.
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
-## Implementation en C
-Pour implementer le protocol en C nous avons effectuer différents choix.
+## Implémentation en C
+Pour implémenter le protocole en C nous avons effectué différents choix.
 
-En effet, nous avons décidé de en place un systeme de sérialisation et désérialisation des trames.
-Cela nous permet de plus simplement envoyer des trames  sous forme de `char*` et de les récupérer 
+En effet, nous avons décidé de mettre en place un système de sérialisation et désérialisation des trames.
+Cela nous permet de plus simplement envoyer des trames  sous forme de `unsigned char*` et de les récupérer 
 et les traiter sous forme de structure plus simple à manipuler.
 
 ### Structure
-Afin de collé au mieux au protocole nous avons décidé de faire deux structure différente, une par trame.
-Pour chaque structure toujours par simplicité nous avons décidé de mettre en place un type custom
-permettant d'acceder au pointer de la trame.
+Afin de coller au mieux au protocole nous avons décidé de faire deux structures différentes, une par trame.
+Pour chaque structure, toujours par simplicité, nous avons décidé de mettre en place un type custom
+permettant d'accéder au pointeur de la trame.
 
 Voici le code des structures :
 
@@ -242,7 +242,7 @@ typedef struct _InfosTrame{
 
 typedef InfosTrame * PInfoTrame;
 ```
-Pour les trames de type `DataTrame`
+Pour les trames de type `DATA_TRAME`
 ```c
 typedef struct _DataTrame{
     unsigned char cmd;
@@ -254,12 +254,12 @@ typedef struct _DataTrame{
 typedef DataTrame * PDataTrame;
 ```
 
-On y retrouve les champs présent dans les trames. Sauf pour la trame DataTrame, 
+On y retrouve les champs présents dans les trames. Sauf pour la trame DATA_TRAME, 
 qui contient en plus le descripteur de fichier des données transmises car elle ne les contient pas directement.
 
 ### Enumération
-Nous avons décidé de mettre en place une enumération pour les commandes et les statuts car ceux-ci 
-sont des constantes définie dans le protocle.
+Nous avons décidé de mettre en place une enumération pour les commandes et les statuts car ces derniers
+sont des constantes définies dans le protocole.
 
 Voici donc les enumérations :
 ```c
@@ -290,115 +290,117 @@ enum STATUS{
     FILE_TOO_LARGE= 0x52
 };
 ```
-### Serialisation
-Les fonction de sérialisation nous permettes de convertire une structure en `char*` dans le but de l'envoyer.
-Elle ont aussi pour but de d'encapuslter les données quelles contienne afin de rester cohérent avec le protocole.
+### Sérialisation
+Les fonctions de sérialisation nous permettent de convertir une structure en `unsigned char*` dans le but de l'envoyer.
+Elles ont aussi pour but d'encapsuler les données qu'elles contiennent afin de rester cohérent avec le protocole.
 
-Ici nous avons décidé de mettre en place deux fonction de sérialisation. (encodeInfosTrame() et encodeDataHead())
+Ici nous avons décidé de mettre en place deux fonctions de sérialisation (encodeInfosTrame() et encodeDataHead()).
 Une pour les trames de type `INFO_TRAME` et une pour les trames de type `DATA_TRAME`.
 
-Chacune de ces fonction fait appel à une fonction de verification de l'encapsulation des données (checkDataTrameError() et checkInfoTrameError()).
-C'est fonction d'encapsulation d'erreur on pour but de générer des erreur d'execution si les données ne sont pas cohérentes.
-Afin de nous informer de potentiel mauvaise utilisation.
+Chacune de ces fonctions fait appel à une fonction de vérification de l'encapsulation des données (checkDataTrameError() et checkInfoTrameError()).
+Ces fonctions d'encapsulation d'erreur ont pour but de générer des erreurs d'execution si les données ne sont pas cohérentes,
+afin de nous informer de potentielles mauvaises utilisations.
 
-la sérialisation des trame de type `DATA_TRAME` un peut particuliére en effet on ne sérialise pas les données directement
-mais seulement l'entête de la trame. Les données sont elle envoyer et traiter par le serveur ou le clients directement 
-dans le socket, aprés l'envoie de l'entête grâce au descripteur de fichier présent dans la structure `DataTrame`
+La sérialisation des trames de type `DATA_TRAME` est un peu particuliére, en effet on ne sérialise pas les données directement,
+seulement l'entête de la trame. Les données, quant à elles, sont envoyées et traitées par le serveur ou le client directement 
+dans le socket, après l'envoi de l'entête grâce au descripteur de fichier présent dans la structure `DataTrame`.
 
 ### Désérialisation
-Les fonction de désérialisation nous permettes de convertire une `char*` en structure dans le but de le traiter plus simplement dans le code.
-Elle sont l'exactement inverse des fonction de sérialisation. La particularité ici et que nous teston l'encapsulation des données
-une fois quelle sont déserialisées avec les même fonction que pour la sérialisation.
+Les fonctions de désérialisation nous permettent de convertir une trame `unsigned char*` en structure dans le but de la traiter plus simplement dans le code.
+Elle sont l'exact inverse des fonctions de sérialisation. La particularité ici est que nous testons l'encapsulation des données
+une fois qu'elles sont désérialisées avec les mêmes fonctions que pour la sérialisation.
 
-Ici nous avons déciidé de mettre en place deux fonction de désérialisation. (decodeInfosTrame() et decodeDataHeadTrame())
-La particularité ici et que decodeDataHeadTrame() demande en parametre le descripteur de fichier du socket pour le placer
+Ici nous avons déciidé de mettre en place deux fonctions de désérialisation (decodeInfosTrame() et decodeDataHeadTrame()).
+La particularité ici est que decodeDataHeadTrame() demande en paramètre le descripteur de fichier du socket pour le placer
 dans la structure.
 
 ### Gestion des erreurs
-Pour la gestion des erreurs nous nous somme inspirer de la façons dons les erreur son gérer avec Erno.
-Cela veut dire que nous avons mis en place une variable globale `SPP_Erno` qui contient les exeption rencontrées.
-Par defaut à -1, lorsque une erreur et rencontrer la fonction vas la placer sur le bon code d'erreur. 
-Code d'erreur corespondant à l'emplacement du message d'erreur dans le tableau `DDP_errList[]`. Ce qui nous permet 
-ensuite soit de faire appellé la fonction `SPP_perror()` pour avoir le message d'erreur correspondant au code d'erreur.
-Soit de directement l'imprimer dans la sortie erreur avec `DDP_errList[SPP_Erno]`.
+Pour la gestion des erreurs, nous nous sommes inspirés de la façon dont les erreurs sont gérées avec Erno.
+Cela veut dire que nous avons mis en place une variable globale `SPP_Erno` qui contient les exceptions rencontrées.
+SPP_Erno est par défaut à -1. Lorsque une erreur est rencontrée, la fonction va la placer sur le bon code d'erreur. 
+Code d'erreur corespondant à l'emplacement du message d'erreur dans le tableau `DDP_errList[]`. 
+Ce qui nous laisse ensuite deux options :
+* faire appeler la fonction `SPP_perror()` pour avoir le message d'erreur correspondant au code d'erreur
+* directement l'imprimer dans la sortie erreur avec `DDP_errList[SPP_Erno]`.
 
-Les erreur SPP sont principalement renvoyer par les fonction de verification de l'encapsulation des données.
-Les fonction de sérialisation et de désérialisation peuvent ensuite les propager en renvoyer un code d'erreur egal à
-0xff sur l'emplacement de la commande. (Soit frame[0] soit struc->cmd).
-Si le code d'erreur est détécter on peut alors faire appel à la fonction `SPP_perror()` pour avoir le message 
+Les erreur SPP sont principalement renvoyées par les fonctions de vérification de l'encapsulation des données.
+Les fonction de sérialisation et de désérialisation peuvent ensuite les propager en renvoyant un code d'erreur égal à
+0xff sur l'emplacement de la commande (soit frame[0], soit struc->cmd).
+Si le code d'erreur est détécté, on peut alors faire appel à la fonction `SPP_perror()` pour avoir le message 
 d'erreur correspondant.
 
 # Test Driven Development
-Afin de faciliter la vérification de la fonctionnalité nous avons décidé de faire du TDD.
-Cela veut dire que nous avons commencé par rédiger nos headers puis les test unitaires des fonction crée et enfin nous 
-les avons implémenté en c en veillant à réspécter les spécifaition des tests.
+Afin de faciliter la vérification de la fonctionnalité, nous avons décidé de faire du TDD.
+Cela veut dire que nous avons commencé par rédiger nos headers, puis les tests unitaires des fonctions que nous avons prototypées, et enfin nous 
+les avons implémentées en c en veillant à respecter les spécifications des tests.
 
 
-Pour se faire, nous avons mis en place un dossier `test` qui contient toutes
-fonction de test. Comme nous ne connaisson pas les framwork de test unitaire nous avons donc mis en place notre propre 
+Pour se faire, nous avons mis en place un dossier `test` qui contient toutes fonction de test. 
+Comme nous ne connaissons pas les frameworks de tests unitaires, nous avons mis en place notre propre 
 core de test dans le fichier `test-core.c`.
 
-Ce core de test contient les fonction de test de la fonctionnalité. Ainci que quelle que fonction d'affichage utile
-Mais le pricipe ici et le suivant : 
+Ce core de test contient les fonctions de test de la fonctionnalité. Ainsi que quelques fonctions d'affichage utile.
+Le principe ici est le suivant : 
  * Un fichier de test par fichier c à tester
- * Chaque fonction à tester doit avoir une ou plusieur fonction de test qui lui est associé.
+ * Chaque fonction à tester doit avoir une ou plusieurs fonctions de test qui lui est associé.
  * Chaque fonction de test renvoie un boolean qui doit être vrai si le test est passé.
  * Chaque fonction de test doit avoir un commentaire qui explique ce qu'elle fait.
- * Toutes les fonction de test sont appelé par une fonction de fichier C
- * Cette fonction de fichier C est déclarer dans `all_tests.h` et appelez dans `all_tests.c`
+ * Toutes les fonctions de test sont appelées par une fonction de fichier C.
+ * Cette fonction de fichier C est déclarée dans `all_tests.h` et appelée dans `all_tests.c`.
 
-Pour lancé les test nous nous somme arranger pour que notre makefile soit en meusure de les build spéarément du code utilisable.
+Pour lancer les tests, nous nous sommes arrangés pour que notre makefile soit en mesure de les build spéarément du code utilisable.
 
-Nous avons donc crée la phony rules `test` qui permet de build les fichier de test. Ensuite on peut lancé les test
+Nous avons donc crée la phony rule `test` qui permet de build les fichiers de test. Ensuite on peut lancer les tests
 en appelant le fichier `run_tests` dans le dossier bin.
 
 # Makefile et build
-Dans se projet nous avons décidé de respécter l'arborecence de fichier suivante :
-* `bin` pour les fichier executable
-* `debug` pour les fichier executable de debug ainci que les .obj de debug
-* `doc` pour les fichier de documentation
-* `headers` pour les fichier header
-* `obj` pour les fichier objet
-* `sources` pour les fichier source
-* `tests` pour les fichier de test
+Dans ce projet, nous avons décidé de respecter l'arborecence de fichiers suivante :
+* `bin` pour les fichiers executables
+* `debug` pour les fichiers executables de debug ainsi que les .obj de debug
+* `doc` pour les fichiers de documentation
+* `headers` pour les fichiers headers
+* `obj` pour les fichiers objets
+* `sources` pour les fichiers sources
+* `tests` pour les fichiers de tests
 
-Pour se faire nous avons d'abors commancé par indiqué dans notre makefile les fichier à build 1 à 1.
-Ce rendant bien compte que cela ne serais plus soutenable pour la suite du projet, nous avons essyer de l'implementer 
-nous même a l'aider des variables de configuration.
+Pour se faire, nous avons d'abord commencé par indiquer dans notre makefile les fichiers à build un à un.
+Nous rendant bien compte que cela ne serait plus vraiment efficace pour la suite du projet, nous avons essyé de l'implémenter 
+nous même a l'aide des variables de configuration.
 
-Hors n'étant pas expert en makefile nous avons donc décidé d'utiliser un template de makefile que nous avons modifier 
-afin d'y inclure nos headers et de permmetre la compilation de nos tests unitaires.
+Or n'étant pas expert en makefile, nous avons donc décidé d'utiliser un template de makefile que nous avons modifié 
+afin d'y inclure nos headers et de permettre la compilation de nos tests unitaires.
 
-Celui ci dispose des commandes suivante :
-* `all` qui permet de build tout les fichier du projet
-* `test` qui permet de build les fichier de test
-* `debug` qui permet de build les fichier fichier du projet en mode debug
-* `clean` qui permet de clean tout les fichier obj et bin du projet
+Celui-ci dispose des commandes suivantes :
+* `all` qui permet de build tous les fichiers du projet
+* `test` qui permet de build les fichiers de test
+* `debug` qui permet de build les fichiers du projet en mode debug
+* `clean` qui permet de clean tous les fichiers obj et bin du projet
 
-Nous avons aussi d'autre commande annexe utiliser par les commande précédente :
+Nous avons aussi d'autres commandes annexes utilisées par les commandes précédente :
 * `makedir` qui permet de créer les dossiers de build si ils n'existent pas
-* `build-test` qui permet de build les fichier de test sans créer les dossiers de build
-* `distclean` qui permet de supprimer les dossier de build et bin du projet
+* `build-test` qui permet de build les fichiers de test sans créer les dossiers de build
+* `distclean` qui permet de supprimer les dossiers de build et bin du projet
 
-Par defaut nous appellons la commande `all` lorsque l'on execute la commande `make`.
+Par defaut nous appelons la commande `all` lorsque l'on exécute la commande `make`.
 
 # Gestion de projet
-Afin d'améliorer notre productivité mais aussi pour paraléliser le travail nous avons décidé d'utiliser GitHubProject
-Liez à notre répository GitHub.
+Afin d'améliorer notre productivité mais aussi pour paralléliser le travail, nous avons décidé d'utiliser GitHubProject, 
+une fonctionnalité liée à notre répository GitHub.
 
 Le pojet s'apparente à un tableau de kanban avec les colonnes suivantes :
-* `To Do` : Les taches qui n'ont pas encore été développé
-* `In Progress` : Les taches qui ont été testé mais qui n'ont pas encore été validé
-* `Done` : Les taches qui ont été validé
+* `To Do` : Les taches qui n'ont pas encore été développées
+* `In Progress` : Les taches qui ont été testées mais qui n'ont pas encore été validées
+* `Done` : Les taches qui ont été validées
 
-Sur chacune des colonnes nous avons des issus qui s'apparente à des tickets. Tous les soir nous ajoitons des taches à faire.
-Pour le lendemain. Puis le lendemain matin nous nous les assignons pour les dévlopper. Enfin nous nous créons une branch
-pour effecuter les modification imposé par l'issue.
+Sur chacune des colonnes, nous avions des *issues* qui s'apparentent à des tickets. Tous les soirs nous ajoutions des tâches à faire pour le lendemain.
+Puis, le lendemain matin, nous nous les assignions pour les développer. 
+Enfin nous nous créions une branche pour effecuter les modification imposées par l'*issue*.
 
-Au début du projet nous dévloppions les taches qui nous sont assignées seul. Mais aprés quelle que heures à procéder de cette magnière
-Nous nous somme rendu compte que nous étions plus productif et attentif au erreur lorsque nous travaillons à deux.
+Au début du projet nous développions les tâches qui nous avaient été assignés seul. Mais après quelques heures à procéder de cette manière,nous nous sommes rendu compte que nous étions plus productif et attentif aux erreurs lorsque nous travaillions à deux.
 
-Nous nous somme alors mis à travailler à 2 sur chaque issus.
+Nous avons ainsi travailler par paire sur chaque *issue*.
 
-Lorsque l'on avait terminer une issue nous ouvrions alors une pull request afin de la valider par les membre du groupe ne travaillant pas sur l'issue.
-Une fois leur review envoyer soit nous effectuons les modification demander soit si il valicdé la pull request nous effectuons un merge.
+Lorsque l'on avait terminé une *issue*, nous ouvrions alors une pull request afin de la valider par les membres du groupe ne travaillant pas sur l'*issue*.
+Une fois leur retour mis en ligne sur Github, nous avions deux choix :
+* nous effectuions les modifications demandées
+* s'ils validaient la pull request, nous effectuions un merge

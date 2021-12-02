@@ -9,6 +9,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <sys/wait.h>
+#include "spp.h"
+#define TRAME_SIZE 6
+#define BUFFER_SIZE 1024
 
 void handlerChildDeath(){
     wait(NULL);
@@ -17,17 +20,42 @@ void handlerChildDeath(){
 
 // Fonction de gestion du socket applicatif
 void serviceProcess(int serviceSockfd){
-
-    int buffer;
-    read(serviceSockfd,&buffer,sizeof(buffer));
-    printf("[server] le client dit : %d\n",buffer);
-
-    int n = 6;
-    write(serviceSockfd, &n, sizeof(n));
-    printf("[server] le serveur dit : %d\n",n);
-
-    read(serviceSockfd,&buffer,sizeof(buffer));
-    printf("[server] le client dit : %d\n",buffer);
+    //while first socket charachter equal 
+    unsigned char frame[TRAME_SIZE];
+    int n;
+    while(1){
+        bzero(frame, TRAME_SIZE); //bzero permet de vider le buffer et de le remplir de 0
+        n = read(serviceSockfd, frame, TRAME_SIZE);
+        if (n < 0) {
+            perror("[server] Erreur de lecture sur le socket applicatif");
+            exit(1);
+        }
+        if(checkTypeFrame(frame) == 1){
+            printf("[server] Trame de type 1 recu\n");
+            PDataTrame data = decodeDataHead(frame,6);
+            if(data->cmd==0xff){
+                SPP_perror("Erreur : le décodage trame");
+            }
+            
+        }
+        else if(checkTypeFrame(frame) == 2){
+            printf("[server] Trame de type 2 recu\n");
+            PInfoTrame inf = decodeInfosTrame(frame,6);
+            if(inf->cmd==0xff){
+                SPP_perror("Erreur : le décodage trame");
+            }
+            if(inf->cmd == CLOSE_SOCKET){
+                close(serviceSockfd);
+                printf("[server] le socket applicatif vas se sucidé\n");
+                exit(0);
+                break;
+            }
+        }
+        else if(checkTypeFrame(frame) == -1){
+            printf("[server] Erreur de type de trame inconue\n");
+            exit(-1);
+        }
+    }
 }
 
 void serverTCP(int port){

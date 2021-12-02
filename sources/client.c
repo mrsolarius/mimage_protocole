@@ -8,7 +8,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-// client_tcp function
+#include "spp.h"
+// fonction principal du client
 void clientTCP(char * hostname, long port) {
     printf("[client] le client se connecte au serveur %s sur le port %ld\n",hostname,port);
     // create tcp socket
@@ -28,7 +29,7 @@ void clientTCP(char * hostname, long port) {
     }
 
     serv_addr->sin_family = AF_INET;
-    memcpy(&serv_addr->sin_addr.s_addr,server->h_addr,15);
+    memcpy(&serv_addr->sin_addr.s_addr,server->h_addr,15); //15 corespond à la taille maximal d'une adresse ipv4
     serv_addr->sin_port = htons(port);
     // connect to server
     int conn = connect(sockfd, (struct sockaddr *) serv_addr, sizeof(struct sockaddr));
@@ -38,20 +39,18 @@ void clientTCP(char * hostname, long port) {
     }
     free(serv_addr);
     // send message to server
-    int n = 5;
-    write(sockfd, &n, sizeof(n));
-    printf("[client] le client dit : %d\n",n);
-
-    sleep(20);
-
-    n = 4;
-    write(sockfd, &n, sizeof(n));
-    printf("[client] le client dit : %d\n",n);
-    // read message from server
-    int buffer;
-    read(sockfd,&buffer,sizeof(buffer));
-    printf("[client] le serveur dit : %d\n",buffer);
-
+    PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
+    infos->cmd = CLOSE_SOCKET;
+    infos->status = SUCCESS;
+    infos->sizeInfos = 0;
+    infos->nbFiles = 0;
+    unsigned char* infosTrame = encodeInfosTrame(infos);
+    
+    int n = write(sockfd, infosTrame, 6);
+    if(n < 0) {
+        perror("ERROR writing to socket");
+        exit(1);
+    }
     // close connection
     close(sockfd);
 }

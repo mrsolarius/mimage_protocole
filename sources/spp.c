@@ -103,16 +103,18 @@ unsigned char* encodeInfosTrame(PInfoTrame infosTrame){
     //on met en place la structure de la trame après l'avoir déclarée
     unsigned char * trame;
     if(infosTrame->sizeInfos>0){
-        trame = malloc(sizeof(char)*4 + strlen(infosTrame->infos)+1);
+        trame = malloc(sizeof(char)*6 + strlen(infosTrame->infos)+1);
     }else{
-        trame = malloc(sizeof(char)*4);
+        trame = malloc(sizeof(char)*6);
     }
     trame[0]=infosTrame->cmd;
     trame[1]=infosTrame->status;
     trame[2]=infosTrame->nbFiles;
     trame[3]=infosTrame->sizeInfos;
+    trame[4]=0;
+    trame[5]=0;
     for (int comp=0; comp < (infosTrame->sizeInfos); comp++){
-        trame[comp+4] = infosTrame->infos[comp];
+        trame[comp+6] = infosTrame->infos[comp];
     }
     return trame;
 }

@@ -279,12 +279,12 @@ bool encodeInfosTrame_itShouldReturnCorrectFrame(){
         (infosTrame[1]==SUCCESS)&&
         (infosTrame[2]==0)&&
         (infosTrame[3]==6)&&
-        (infosTrame[4]=='a')&&
-        (infosTrame[5]=='z')&&
-        (infosTrame[6]=='e')&&
-        (infosTrame[7]=='r')&&
-        (infosTrame[8]=='t')&&
-        (infosTrame[9]=='y')
+        (infosTrame[6]=='a')&&
+        (infosTrame[7]=='z')&&
+        (infosTrame[8]=='e')&&
+        (infosTrame[9]=='r')&&
+        (infosTrame[10]=='t')&&
+        (infosTrame[11]=='y')
     );
 }
 
@@ -429,7 +429,6 @@ void testSPP(){
     passTest("checkInfoTrameError","it should return CMD_ERROR",checkInfoTrameError_itShouldRetunrCMDERRORError());
     passTest("checkInfoTrameError","it should return EMPTY_STATUS",checkInfoTrameError_itShouldRetunrEMPTYSTATUSError());
     passTest("checkInfoTrameError","it should return STATUS_ERROR",checkInfoTrameError_itShouldReturnSTATUSERROR());
-    passTest("checkInfoTrameError","it should return WRONG_SIZE",checkInfoTrameError_itShouldRetunrWRONGSIZEError());
     
     printTitle("Test de la fonction encodeInfosTrame");
     passTest("encodeInfosTrame","it should return Correct Frame",encodeInfosTrame_itShouldReturnCorrectFrame());

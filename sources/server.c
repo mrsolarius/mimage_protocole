@@ -40,7 +40,7 @@ void serviceProcess(int serviceSockfd){
         }
         else if(checkTypeFrame(frame) == 2){
             printf("[server] Trame de type 2 recu\n");
-            PInfoTrame inf = decodeInfosTrame(frame,6);
+            PInfoTrame inf = decodeInfosTrame(frame);
             if(inf->cmd==0xff){
                 SPP_perror("Erreur : le décodage trame");
             }

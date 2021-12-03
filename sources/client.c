@@ -201,20 +201,20 @@ void getFileData(int sockfd, char * fileName) {
 }
 
 
-void sendFile(int sockfd, char * fileName){
+unsigned char sendFile(int sockfd, char * fileName) {
     // On crée la trame de demande de fichier
-    printf("[client] envoi du fichier %s\n",fileName);
+    printf("[client] envoi du fichier %s\n", fileName);
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = UPLOAD_FILE_NAME;
     infos->status = SUCCESS;
     infos->sizeInfos = strlen(fileName);
     infos->nbFiles = 0;
-    infos->infos = (char *) malloc(sizeof(char) * (infos->sizeInfos+1));
-    strcpy(infos->infos,fileName);
-    unsigned char* infosTrame = encodeInfosTrame(infos);
+    infos->infos = (char *) malloc(sizeof(char) * (infos->sizeInfos + 1));
+    strcpy(infos->infos, fileName);
+    unsigned char *infosTrame = encodeInfosTrame(infos);
     print_hex1(infosTrame);
-    int e = write(sockfd, infosTrame, TRAME_SIZE+infos->sizeInfos);
-    if(e < 0) {
+    int e = write(sockfd, infosTrame, TRAME_SIZE + infos->sizeInfos);
+    if (e < 0) {
         perror("ERROR pendant l'écriture du socket");
         exit(1);
     }
@@ -222,26 +222,26 @@ void sendFile(int sockfd, char * fileName){
     free(infosTrame);
 
     // On récécéptione la trame d'aquitement
-    unsigned char* acquitFrame = (unsigned char*) malloc(TRAME_SIZE);
+    unsigned char *acquitFrame = (unsigned char *) malloc(TRAME_SIZE);
     e = read(sockfd, acquitFrame, TRAME_SIZE);
     print_hex1(acquitFrame);
-    if(e < 0) {
+    if (e < 0) {
         perror("ERROR pendant la lecture du socket");
         exit(1);
     }
     PInfoTrame acquit = decodeInfosTrame(acquitFrame);
-    printf("[client] cmd : %x\n",acquit->cmd);
-    printf("[client] acquit : %x\n",acquit->status);
+    printf("[client] cmd : %x\n", acquit->cmd);
+    printf("[client] acquit : %x\n", acquit->status);
     free(acquitFrame);
 
-    if(acquit->status==SUCCESS){
+    if (acquit->status == SUCCESS) {
         // On ouvre le fichier à envoyer
         int datafd = open(fileName, O_RDONLY);
         // on stock la taille du fichier dans une variable
         struct stat fileStat;
         fstat(datafd, &fileStat);
         long sizeFile = fileStat.st_size;
-        printf("[client] taille du fichier : %ld\n",sizeFile);
+        printf("[client] taille du fichier : %ld\n", sizeFile);
 
         // On crée l'entête de la trame de données
         PDataTrame dataHead = (PDataTrame) malloc(sizeof(PDataTrame));
@@ -249,30 +249,30 @@ void sendFile(int sockfd, char * fileName){
         dataHead->status = SUCCESS;
         dataHead->sizeData = sizeFile;
         dataHead->dataFd = datafd;
-        unsigned char* dataHeadTrame = encodeDataHead(dataHead);
+        unsigned char *dataHeadTrame = encodeDataHead(dataHead);
         print_hex1(dataHeadTrame);
         printf("SPP erno %d\n", SPP_Erno);
         // On envoie l'entête de la trame de données
         e = write(sockfd, dataHeadTrame, TRAME_SIZE);
-        if(e < 0) {
+        if (e < 0) {
             perror("ERROR pendant l'écriture du socket");
             exit(1);
         }
         free(dataHeadTrame);
         // On envoie les données du fichier
         char tampon[BUFFER_SIZE];
-        for(int i = 0;  i < dataHead->sizeData; i+=BUFFER_SIZE){
-            printf("octets lu : %d\n",dataHead->sizeData-i);
-            if(i+BUFFER_SIZE > dataHead->sizeData){
-                read(dataHead->dataFd, tampon,  dataHead->sizeData-i);
-                e = write(sockfd, tampon, dataHead->sizeData-i);
-                bzero(tampon,  dataHead->sizeData-i);
-            }else{
-                read(dataHead->dataFd, tampon,  BUFFER_SIZE);
+        for (int i = 0; i < dataHead->sizeData; i += BUFFER_SIZE) {
+            printf("octets lu : %d\n", dataHead->sizeData - i);
+            if (i + BUFFER_SIZE > dataHead->sizeData) {
+                read(dataHead->dataFd, tampon, dataHead->sizeData - i);
+                e = write(sockfd, tampon, dataHead->sizeData - i);
+                bzero(tampon, dataHead->sizeData - i);
+            } else {
+                read(dataHead->dataFd, tampon, BUFFER_SIZE);
                 e = write(sockfd, tampon, BUFFER_SIZE);
-                bzero(tampon,  BUFFER_SIZE);
+                bzero(tampon, BUFFER_SIZE);
             }
-            if(e < 0) {
+            if (e < 0) {
                 perror("ERROR pendant l'écriture du socket");
                 exit(1);
             }
@@ -280,8 +280,23 @@ void sendFile(int sockfd, char * fileName){
         close(datafd);
         free(dataHead);
 
+        // On récécéptione la trame d'aquitement
+        unsigned char *acquitFrame = (unsigned char *) malloc(TRAME_SIZE);
+        e = read(sockfd, acquitFrame, TRAME_SIZE);
+        if (e < 0) {
+            perror("ERROR pendant la lecture du socket");
+            exit(1);
+        }
+        PInfoTrame acquit = decodeInfosTrame(acquitFrame);
+        printf("[client] cmd : %x\n", acquit->cmd);
+        printf("[client] acquit : %x\n", acquit->status);
+        unsigned char returnStatus = acquit->status;
+        free(acquitFrame);
+        return returnStatus;
         //ATTENTION LECTURE A FAIRE ET RENVOYER UNE ERREUR
     }
+    return INTERNAL_ERROR;
+}
 
 
 
@@ -406,4 +421,3 @@ void sendFile(int sockfd, char * fileName){
             printf("[client] le fichier %s a été envoyé\n",fileName);
         }
     }*/
-}

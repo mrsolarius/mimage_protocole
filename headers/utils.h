@@ -13,4 +13,6 @@
 char* getType(char * filePath);
 int countFiles(char * path);
 char ** getFiles(char * path, int nbFiles);
+char ** fileToArray(char * filePath, int * nbLines);
+int isInArray(char * string, char ** array, int nbLines);
 #endif //utils_h

@@ -38,6 +38,7 @@ bool checkTypeBat_itShouldPass_3() {
 //Pour le cas d'un fichier ico
 bool checkTypeIco_itShouldPass_4() {
     char* type = getType("tests/types/t430_v4.ico");
+    printf("%s\n", type);
     int different = strcmp(type, "image/vnd.microsoft.icon");
     if (different)
     {

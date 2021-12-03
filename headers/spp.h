@@ -4,7 +4,7 @@
 
 #define TRAME_SIZE 6
 #define MAX_TRAME_SIZE 255 
-#define BUFFER_SIZE 255
+#define BUFFER_SIZE 128
 /**
  * Equivalent de erno
  */

@@ -107,4 +107,58 @@ char ** getFiles(char * path, int nbFiles){
     return files;
 }
 
+// fonction qui retourne le nombre de lignes d'un fichier et qui retourne le char* de chaque ligne
+char ** fileToArray(char * filePath, int * nbLines){
+    // On ouvre le fichier
+    FILE * file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    // get the size of the file
+    int nbLinesFile = 0;
+    char line[255];
+    while (fgets(line, sizeof(line), file) != NULL) {
+        nbLinesFile++;
+    }
+    // On ferme le fichier
+    fclose(file);
+    // On alloue la mémoire pour le tableau de fichier avec le nombre de ligne
+    char ** array = (char **) malloc(sizeof(char *) * nbLinesFile);
+    // open the file
+    file = fopen(filePath, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    // On parcours le fichier
+    int i = 0;
+    while (fgets(line, sizeof(line), file) != NULL) {
+        // On alloue la mémoire pour la taille du nom du fichier
+        array[i] = (char *) malloc(sizeof(char) * (strlen(line)+1));
+        // On copie le nom du fichier dans le tableau
+        strcpy(array[i], line);
+        // On décrémente le compteur pour passer à la case du tableau suivante
+        i++;
+    }
+    // fermeture du fichier
+    fclose(file);
+    // on renvoie le tableau tout allouer
+    *nbLines = nbLinesFile;
+    return array;
+}
 
+// fonction qui retourne le nombre de lignes d'un fichier et qui retourne le char* de chaque ligne
+int isInArray(char * string, char ** array, int nbLines){
+    // on parcours le tableau
+    for (int i = 0; i < nbLines; i++) {
+        // si la string est dans le tableau on renvoie true
+        // commme dans le fichier il y a des \n à la fin de chaque ligne
+        // on utilise strncmp pour comparer la valeur de la liste avec la taille du string
+        if (strncmp(string, array[i], strlen(string))==0) {
+            return 1;
+        }
+    }
+    // si la string n'est pas dans le tableau on renvoie false
+    return 0;
+}

@@ -1,6 +1,6 @@
 #include "all-test.h"
 #include "test-core.h"
-#include "type.h"
+#include "utils.h"
 
 //Pour le cas d'un fichier mp4
 bool checkTypeMp4_itShouldPass_1() {
@@ -26,7 +26,7 @@ bool checkTypeGif_itShouldPass_2() {
 
 //Pour le cas d'un fichier bat
 bool checkTypeBat_itShouldPass_3() {
-    char* type = getType("tests/types/start.bat");
+    char* type = getType("tests/types/start.cmd");
     int different = strcmp(type, "text/plain");
     if (different)
     {

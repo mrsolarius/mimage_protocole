@@ -111,8 +111,8 @@ unsigned char* encodeInfosTrame(PInfoTrame infosTrame){
     trame[1]=infosTrame->status;
     trame[2]=infosTrame->nbFiles;
     trame[3]=infosTrame->sizeInfos;
-    trame[4]=0;
-    trame[5]=0;
+    trame[4]=0xff;
+    trame[5]=0xff;
     for (int comp=0; comp < (infosTrame->sizeInfos); comp++){
         trame[comp+6] = infosTrame->infos[comp];
     }
@@ -132,10 +132,32 @@ PInfoTrame decodeInfosTrame(unsigned char* infos){
     return trameDecod;
 }
 
+PInfoTrame decodeInfosTrameFULL(unsigned char* infos){
+    PInfoTrame TrameDecod = (PInfoTrame) malloc(sizeof(InfosTrame));
+    TrameDecod->cmd=infos[0];
+    TrameDecod->status=infos[1];
+    TrameDecod->nbFiles=infos[2];
+    TrameDecod->sizeInfos=infos[3];
+    TrameDecod->infos = malloc(sizeof(char)*(TrameDecod->sizeInfos)+1);
+    // init infos to 0 with memset
+    memset(TrameDecod->infos, 0, sizeof(char)*(TrameDecod->sizeInfos)+1);
+    for (int comp=0;comp<TrameDecod->sizeInfos;comp++){
+        TrameDecod->infos[comp]=infos[comp+6];
+    }
+    if (checkInfoTrameError(TrameDecod)==true){
+        TrameDecod->cmd=0xFF;
+    }
+    if (checkInfoTrameSizeError(TrameDecod)==true){
+        TrameDecod->cmd=0xFF;
+    }
+    return TrameDecod;
+}
+
 //fonction qui prend une structure en parametre qui remplit le champ info avec le tableau de char en 2eme param
 void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size) {
-    infoTrame->infos = malloc(sizeof(char)*(size));
-    for (int comp=0; comp < size; comp++) {
+    infoTrame->infos = malloc(sizeof(char)*(infoTrame->sizeInfos));
+    memset(infoTrame->infos, 0, sizeof(char)*(infoTrame->sizeInfos)+1);
+    for (int comp=0; comp < infoTrame->sizeInfos; comp++) {
         infoTrame->infos[comp] = infos[comp];
     }
     if (checkInfoTrameSizeError(infoTrame)==true){
@@ -145,7 +167,7 @@ void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size
 
 unsigned char* encodeDataHead(PDataTrame dataTrame){
     unsigned char *error = malloc(sizeof(unsigned char));
-    // on check tous les problèmes potentiel pouvant subevenir
+    // on check tous les problèmes potentiel pouvant survenir
     if (checkDataTrameError(dataTrame)==true){
         error[0]=0xff;
         return error;

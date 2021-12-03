@@ -144,7 +144,7 @@ void serverTCP(int port){
 }
 
 void listFilesS(int sockfd){
-    int count_Files = countFiles("tests/types/");
+    int count_Files = countFiles("data/serveur/");
     PInfoTrame inf = (PInfoTrame)malloc(sizeof(PInfoTrame));
     inf->cmd = LIST_SIZE;
     inf->status = SUCCESS;
@@ -161,7 +161,7 @@ void listFilesS(int sockfd){
     free(frame);
     free(inf);
 
-    char * * files = getFiles("tests/types/",count_Files);
+    char * * files = getFiles("data/serveur/",count_Files);
     for(int i = 0; i < count_Files; i++){
         PInfoTrame info = (PInfoTrame)malloc(sizeof(InfosTrame));
         info->cmd = DOWNLOAD_FILE_NAME;
@@ -196,8 +196,8 @@ void downloadFileS(int sockfd, PInfoTrame info) {
     
     // open file
     //concat two string
-    char * path = (char*)malloc(strlen("tests/types/")+strlen(info->infos)+1);
-    strcpy(path,"tests/types/");
+    char * path = (char*)malloc(strlen("data/serveur/")+strlen(info->infos)+1);
+    strcpy(path,"data/serveur/");
     strcat(path,info->infos);
     FILE * f = fopen(path, "rb");
     //get size of file in bytes in size var

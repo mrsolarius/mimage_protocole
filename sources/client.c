@@ -11,6 +11,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include "spp.h"
+#include "Interface.h"
 void print_hex1(const unsigned char *s)
 {
     //tant que le pointeur n'est pas à la fin de la chaine
@@ -49,9 +50,7 @@ void clientTCP(char * hostname, long port) {
     }
     free(serv_addr);
     // send message to server
-    sendGetAndSomthing(sockfd);
-    getFileData(sockfd,"1584641959_264125101_0.gif");
-    closeConnection(sockfd);
+    Affiche(sockfd);
 }
 
 void sendGetAndSomthing(int sockfd){
@@ -79,7 +78,7 @@ void closeConnection(int sockfd) {
     }
     // close connection
     close(sockfd);
-    printf("[client] fermeture de la connexion\n");
+    printf("\n[client] fermeture de la connexion\n");
     exit(0);
 }
 
@@ -120,8 +119,6 @@ char ** listFilesC(int sockfd,unsigned char * nbFiles) {
             exit(1);
         }
         PInfoTrame infosReponse = decodeInfosTrame(buffer);
-        printf("size : %d\n",infosReponse->sizeInfos);
-        
         unsigned char * bufferInfo = (unsigned char*) malloc(infosReponse->sizeInfos);
         n = read(sockfd, bufferInfo, infosReponse->sizeInfos);
         decodeInfosTrame_Infos(infosReponse,bufferInfo,infosReponse->sizeInfos);
@@ -136,7 +133,10 @@ char ** listFilesC(int sockfd,unsigned char * nbFiles) {
 
 void getFileData(int sockfd, char * fileName) {
     // On crée la trame de demande de fichier
-    int datafd = open(fileName, O_WRONLY | O_CREAT, 0666);
+    char * path = (char*)malloc(strlen("data/client/")+strlen(fileName)+1);
+    strcpy(path,"data/client/");
+    strcat(path,fileName);
+    int datafd = open(path, O_WRONLY | O_CREAT, 0666);
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = GET_FILE_DATA;
     infos->status = SUCCESS;
@@ -158,7 +158,7 @@ void getFileData(int sockfd, char * fileName) {
         perror("ERROR pendant la lecture du socket");
         exit(1);
     }
-    printf("info info %s",infos->infos);
+    //printf("info info %s",infos->infos);
     // création d'un filedescriptor
     if(datafd == -1){
         perror("ERROR pendant la création du fichier");
@@ -167,21 +167,21 @@ void getFileData(int sockfd, char * fileName) {
     PDataTrame dataHead = decodeDataHead(bufferDataHead, datafd);
     // On test le status de la réponse
     if(dataHead->status == NO_FOUND_FILE){
-        printf("[client] fichier non trouvé\n");
+        printf("\n[client] fichier non trouvé\n");
         free(dataHead);
         free(bufferDataHead);
         return;
     }else if (dataHead->status == INTERNAL_ERROR){
-        printf("[client] erreur inconnue c'est produite\n");
+        printf("\n[client] erreur inconnue c'est produite\n");
         free(dataHead);
         free(bufferDataHead);
         return;
     }
     char tampon[BUFFER_SIZE];
-    printf("sizeData %d",dataHead->sizeData);
+    //printf("sizeData %d",dataHead->sizeData);
     //Parcours du socket tant qu'on n'est pas arrivé au bout ou qu'il n'y a pas eu une erreur
     for(int i = 0;  i< dataHead->sizeData; i+=BUFFER_SIZE){
-        printf("octets lu : %d\n",dataHead->sizeData-i);
+        //printf("octets lu : %d\n",dataHead->sizeData-i);
         if(i+BUFFER_SIZE > dataHead->sizeData){
             n = read(sockfd, tampon, dataHead->sizeData-i);
             write(datafd, tampon, dataHead->sizeData-i);

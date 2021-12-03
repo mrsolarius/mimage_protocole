@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Interface.h"
+#include "client.h"
 
-void liste(char ** nom, int taille){
+void liste(char ** nom, unsigned char taille){
     fprintf(stdout,"\tVoici la liste des fichiers présents sur le serveur :\n");
     for(int comp=0;comp<taille;comp++){
         fprintf(stdout,"\t\t>%d - %s\n",comp,nom[comp]); 
@@ -11,8 +12,16 @@ void liste(char ** nom, int taille){
 }
 
 char * envoie(){
-    char *chemin;
-    printf("\tMerci de renseigner le chemin du fichier que vous souhaitez envoyer :");
+    // char * chemin= (char *) malloc(sizeof(char)*267);
+    char * chemin="data/client/";
+    char * fichier=(char *) malloc(sizeof(char)*255);
+    char * chemintot=(char *) malloc(sizeof(char)*267);
+    printf("\tMerci de renseigner le chemin du fichier que vous souhaitez envoyer :\n");
+    curseur();
+    scanf("%s",fichier);
+    strcpy(chemintot,chemin);
+    chemin=strcat(chemintot, fichier);
+    //chemin=chemin+fichier;
     return chemin;
 }
 
@@ -24,7 +33,7 @@ void curseur(){
     printf("\n\t>:");
 }
 
-int recuperation(char ** nom, int taille){
+int recuperation(char ** nom, unsigned char taille){
     int saisie;
     char lect[255];
     fprintf(stdout,"\tQuel fichier voulez vous récupérer ? Merci d'entrer le numéro correspondant:");
@@ -56,20 +65,8 @@ void menu(){
 }
 
 
-void Affiche(){
-    char * choix= malloc(sizeof(char));
-
-    //exemples de noms
-    char str[] ="voiture.png";
-    char ** files = (char **) malloc(sizeof(char *) * 2);
-    files[0] = (char *) malloc(sizeof(char) * (strlen(str)+1));
-    strcpy(files[0],str);  
-    
-    char str2[] ="camion.ico";
-    files[1] = (char *) malloc(sizeof(char) * (strlen(str)+1));
-    strcpy(files[1],str2); 
-    int taille=2;
-    
+void Affiche(int sockfd){
+    char * choix= malloc(sizeof(char));    
     int index;
     int quit2=1;
     int quit=0;
@@ -80,20 +77,31 @@ void Affiche(){
         switch  (atoi(choix)){
             case 1:
                 ligne();
-                liste(files,taille);
+                unsigned char * taille = malloc(sizeof(unsigned char));
+                char * * files = listFilesC(sockfd, taille);
+                liste(files,*taille);
+                free(taille);
+                free(files);
                 ligne();
                 break;
             case 2:
                 ligne();
-                envoie();
+                char * chemin=malloc(sizeof(char)*267);
+                chemin=envoie();
                 ligne();
+                for(int comp=0;comp<267;comp++){
+                    printf("%c",chemin[comp]);
+                }
+                free(chemin);
                 break;
             case 3:
                 do{
                     ligne(); 
-                    liste(files,taille);
-                    index=recuperation(files,taille); //on récupère l'indice du nom du fichier à récup
-                    //mettre le téléchargement du fichier ici @todo
+                    unsigned char * taille = malloc(sizeof(unsigned char));
+                    char * * files = listFilesC(sockfd, taille);
+                    liste(files,*taille);
+                    index=recuperation(files,*taille); //on récupère l'indice du nom du fichier à récup
+                    getFileData(sockfd,files[index]);
                     printf("\t%s\n\tVoulez-vous récupérer un autre fichier ?\n\t\tEntrer 0 pour revenir au menu principal.\n\t\tEntrer 1 pour récupérer un autre fichier.",files[index]);
                     curseur();
                     scanf("%s",choix);
@@ -104,6 +112,8 @@ void Affiche(){
                     }
                     quit2=atoi(choix);
                     ligne();
+                    free(taille);
+                    free(files);
                 }
                 while(quit2!=0);
                 break;
@@ -112,6 +122,7 @@ void Affiche(){
                 break;
             default:
                 fprintf(stdout,"\n\t\t\t\t/!\\ Merci d'entrer une valeur présente dans la liste ! /!\\");
+                closeConnection(sockfd);
                 break;
         };
     }

@@ -1,15 +1,17 @@
 #include "test-core.h"
 #include "all-test.h"
+#include "Interface.h"
 
 int main(int argc, char *argv[])
 {
     //tests du core de tests
-    testCore();
+    // testCore();
     //affichage du résumé des tests
-    resume();
+    // resume();
     //getType
-    testType();
+    // testType();
     //test SPP
-    testSPP();
+    // testSPP();
+    Affiche();
     return 0;
 }

@@ -5,13 +5,12 @@
 int main(int argc, char *argv[])
 {
     //tests du core de tests
-    // testCore();
+    testCore();
     //affichage du résumé des tests
-    // resume();
+    resume();
     //getType
-    // testType();
+    testType();
     //test SPP
-    // testSPP();
-    Affiche();
+    testSPP();
     return 0;
 }

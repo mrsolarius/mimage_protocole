@@ -81,10 +81,6 @@ Client                  Serveur
      * 0x43 : Refusé : Nom de fichier déjà pris
      * 0x50 : Refusé : Erreur internes du serveur
      * 0x52 : Refusé : Fichier trop volumineux
-   * `SIZE_INFO` : Taille du nom du fichier.
-     * Ici, Unsigned Char
-   * `INFO` : Nom du fichier.
-     * Ici, Char*
 
 
 * `UPLOAD_FILE_DATA`: Message de type `UPLOAD_FILE_DATA` envoyé au serveur.

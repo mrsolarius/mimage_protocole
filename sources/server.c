@@ -227,12 +227,10 @@ void downloadFileS(int sockfd, PInfoTrame info) {
         
         if(i+BUFFER_SIZE > data->sizeData){
             read(datafd, tampon,  data->sizeData-i);
-            print_hex_0(tampon);
             n = write(sockfd, tampon, data->sizeData-i);
             bzero(tampon,  data->sizeData-i);
         }else{
             read(datafd, tampon,  BUFFER_SIZE);
-            print_hex_0(tampon);
             n = write(sockfd, tampon, BUFFER_SIZE);
             bzero(tampon,  BUFFER_SIZE);
         }

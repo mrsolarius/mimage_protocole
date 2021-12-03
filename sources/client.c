@@ -50,7 +50,7 @@ void clientTCP(char * hostname, long port) {
     free(serv_addr);
     // send message to server
     sendGetAndSomthing(sockfd);
-    getFileData(sockfd,"lucas.png");
+    getFileData(sockfd,"1584641959_264125101_0.gif");
     closeConnection(sockfd);
 }
 
@@ -184,12 +184,10 @@ void getFileData(int sockfd, char * fileName) {
         printf("octets lu : %d\n",dataHead->sizeData-i);
         if(i+BUFFER_SIZE > dataHead->sizeData){
             n = read(sockfd, tampon, dataHead->sizeData-i);
-            print_hex1(tampon);
             write(datafd, tampon, dataHead->sizeData-i);
             bzero(tampon,  BUFFER_SIZE);
         }else{
             n = read(sockfd, tampon, BUFFER_SIZE);
-            print_hex1(tampon);
             write(datafd, tampon, BUFFER_SIZE);
             bzero(tampon,  BUFFER_SIZE);
         }

@@ -10,7 +10,6 @@
 #include <netdb.h>
 #include <sys/wait.h>
 #include "test-core.h"
-#include "spp.h"
 #include "utils.h"
 void print_hex_0(const unsigned char *s)
 {
@@ -184,7 +183,11 @@ void listFilesS(int sockfd){
 
 void downloadFileS(int sockfd, PInfoTrame info) {
     unsigned char * bufferInfo = (unsigned char*) malloc(info->sizeInfos);
-    n = read(sockfd, bufferInfo, info->sizeInfos);
+    int n = read(sockfd, bufferInfo, info->sizeInfos);
+    if(n < 0) {
+        perror("ERROR pendant la lecture du socket");
+        exit(1);
+    }
     decodeInfosTrame_Infos(info,bufferInfo,info->sizeInfos);
     free(bufferInfo);
     printf("[server] demande de fichier %s\n",info->infos);
@@ -197,9 +200,11 @@ void downloadFileS(int sockfd, PInfoTrame info) {
     fseek(f, 0, SEEK_SET); // seek back to beginning of file
     
     PDataTrame data = (PDataTrame)malloc(sizeof(DataTrame));
-    data->cmd = UPLOAD_FILE_DATA;
+    data->cmd = DOWNLOAD_FILE_DATA;
     data->status = SUCCESS;
     data->sizeData = size;
+    unsigned char * truc = malloc();
+    truc = encodeDataHead(data);
     
 
 

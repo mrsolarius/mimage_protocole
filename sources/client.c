@@ -4,7 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <signal.h>
+#include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -47,11 +49,11 @@ void clientTCP(char * hostname, long port) {
     }
     free(serv_addr);
     // send message to server
-    sendGetAndSomthing();
+    sendGetAndSomthing(sockfd);
     closeConnection(sockfd);
 }
 
-void sendGetAndSomthing(){
+void sendGetAndSomthing(int sockfd){
     unsigned char * taille = malloc(sizeof(unsigned char));
     char * * list = listFilesC(sockfd, taille);
     //print list char without know size
@@ -89,7 +91,7 @@ char ** listFilesC(int sockfd,unsigned char * nbFiles) {
     unsigned char* infosTrame = encodeInfosTrame(infos);
     int n = write(sockfd, infosTrame, TRAME_SIZE);
     if(n < 0) {
-        perror("ERROR pendant la lecture du socket");
+        perror("ERROR pendant l'écriture du socket");
         exit(1);
     }
     free(infosTrame);
@@ -136,10 +138,10 @@ void getFileData(int sockfd, char * fileName) {
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = GET_FILE_DATA;
     infos->status = SUCCESS;
-    infos->sizeInfos = strlen(filename);
+    infos->sizeInfos = strlen(fileName);
     infos->nbFiles = 0;
     infos->infos = (char *) malloc(sizeof(char) * (infos->sizeInfos+1));
-    strcpy(infos->infos,filename);
+    strcpy(infos->infos,fileName);
     unsigned char* infosTrame = encodeInfosTrame(infos);
     int n = write(sockfd, infosTrame, TRAME_SIZE+infos->sizeInfos);
     if(n < 0) {
@@ -154,41 +156,38 @@ void getFileData(int sockfd, char * fileName) {
         perror("ERROR pendant la lecture du socket");
         exit(1);
     }
-    PInfoTrame infosReponse = decodeDataHead(bufferDataHead);
-    // On test le status de la réponse
-    if(infosReponse->status == NO_FOUND_FILE){
-        printf("[client] fichier non trouvé\n");
-        free(infosReponse);
-        free(bufferDataHead);
-        return;
-    }else if (infosReponse->status == INTERNAL_ERROR){
-        printf("[client] erreur inconnue c'est produite\n");
-        free(infosReponse);
-        free(bufferDataHead);
-        return;
-    }
-    
-    File * file;
     // création d'un filedescriptor
-    file = fopen(infos->infos, "w");
-    if(file == NULL){
+    int datafd = creat(infos->infos,S_IRWXU);
+    if(datafd == -1){
         perror("ERROR pendant la création du fichier");
         exit(1);
     }
+    PDataTrame dataHead = decodeDataHead(bufferDataHead, datafd);
+    // On test le status de la réponse
+    if(dataHead->status == NO_FOUND_FILE){
+        printf("[client] fichier non trouvé\n");
+        free(dataHead);
+        free(bufferDataHead);
+        return;
+    }else if (dataHead->status == INTERNAL_ERROR){
+        printf("[client] erreur inconnue c'est produite\n");
+        free(dataHead);
+        free(bufferDataHead);
+        return;
+    }
     char tampon[BUFFER_SIZE];
     //Parcours du socket tant qu'on n'est pas arrivé au bout ou qu'il n'y a pas eu une erreur
-    for(int i = 0;  i< infosReponse->sizeInfos; i+=BUFFER_SIZE){
-        if(i+BUFFER_SIZE > infosReponse->sizeInfos){
-            n = read(sockfd, tampon, infosReponse->sizeInfos-i);
-        else
+    for(int i = 0;  i< dataHead->sizeData; i+=BUFFER_SIZE){
+        if(i+BUFFER_SIZE > dataHead->sizeData){
+            n = read(sockfd, tampon, dataHead->sizeData-i);
+        }else{
             n = read(sockfd, tampon, BUFFER_SIZE);
-
+        }
         if(n < 0) {
             perror("ERROR pendant la lecture du socket");
             exit(1);
         }
-        write(tampon, sizeof(char), BUFFER_SIZE, file);
+        write(datafd, tampon, BUFFER_SIZE);
     }
-    fclose(file);
     free(bufferDataHead);
 }

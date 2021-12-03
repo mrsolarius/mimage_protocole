@@ -4,7 +4,7 @@
 
 #define TRAME_SIZE 6
 #define MAX_TRAME_SIZE 255 
-#define BUFFER_SIZE 128
+#define BUFFER_SIZE 256
 /**
  * Equivalent de erno
  */
@@ -127,8 +127,6 @@ unsigned char* encodeInfosTrame(PInfoTrame);
 */
 
 PInfoTrame decodeInfosTrame(unsigned char* infos);
-
-PInfoTrame decodeInfosTrameFULL(unsigned char* infos);
 
 /**
 *   Nom: decodeInfosTrame - Décode le contenu de info dans la trame.

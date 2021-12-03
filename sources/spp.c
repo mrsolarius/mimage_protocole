@@ -132,27 +132,6 @@ PInfoTrame decodeInfosTrame(unsigned char* infos){
     return trameDecod;
 }
 
-PInfoTrame decodeInfosTrameFULL(unsigned char* infos){
-    PInfoTrame TrameDecod = (PInfoTrame) malloc(sizeof(InfosTrame));
-    TrameDecod->cmd=infos[0];
-    TrameDecod->status=infos[1];
-    TrameDecod->nbFiles=infos[2];
-    TrameDecod->sizeInfos=infos[3];
-    TrameDecod->infos = malloc(sizeof(char)*(TrameDecod->sizeInfos)+1);
-    // init infos to 0 with memset
-    memset(TrameDecod->infos, 0, sizeof(char)*(TrameDecod->sizeInfos)+1);
-    for (int comp=0;comp<TrameDecod->sizeInfos;comp++){
-        TrameDecod->infos[comp]=infos[comp+6];
-    }
-    if (checkInfoTrameError(TrameDecod)==true){
-        TrameDecod->cmd=0xFF;
-    }
-    if (checkInfoTrameSizeError(TrameDecod)==true){
-        TrameDecod->cmd=0xFF;
-    }
-    return TrameDecod;
-}
-
 //fonction qui prend une structure en parametre qui remplit le champ info avec le tableau de char en 2eme param
 void decodeInfosTrame_Infos(PInfoTrame infoTrame, unsigned char* infos, int size) {
     infoTrame->infos = malloc(sizeof(char)*(infoTrame->sizeInfos));

@@ -13,13 +13,6 @@
 #include <sys/wait.h>
 #include "test-core.h"
 #include "utils.h"
-void print_hex_0(const unsigned char *s)
-{
-    for(int i = 0; i < 6; i++)
-        printf("%02x-", s[i]);
-    
-    printf("\n");
-}
 void handlerChildDeath(){
     wait(NULL);
 }
@@ -70,8 +63,13 @@ void serviceProcess(int serviceSockfd){
             }
         }
         else if(checkTypeFrame(frame) == -1){
-            printf("[server] Erreur de type de trame inconue\n");
-            exit(-1);
+            if(frame[0]==0x0){
+                printf("[server] Fermeture du serveur\n");
+                exit(0);
+            }else {
+                printf("[server] Erreur de type de trame inconue\n");
+                exit(-1);
+            }
         }
     }
 }
@@ -146,7 +144,7 @@ void serverTCP(int port){
 }
 
 void listFilesS(int sockfd){
-    int count_Files = countFiles("data/serveur/");
+    int count_Files = countFiles(PATH_SERVER);
     PInfoTrame inf = (PInfoTrame)malloc(sizeof(PInfoTrame));
     inf->cmd = LIST_SIZE;
     inf->status = SUCCESS;
@@ -163,7 +161,7 @@ void listFilesS(int sockfd){
     free(frame);
     free(inf);
 
-    char * * files = getFiles("data/serveur/",count_Files);
+    char * * files = getFiles(PATH_SERVER,count_Files);
     for(int i = 0; i < count_Files; i++){
         PInfoTrame info = (PInfoTrame)malloc(sizeof(InfosTrame));
         info->cmd = DOWNLOAD_FILE_NAME;
@@ -173,7 +171,6 @@ void listFilesS(int sockfd){
         info->infos = files[i];
         frame = encodeInfosTrame(info);
         printf("[server] envoie %s\n",info->infos);
-        //print_hex_0(frame);
         int n = write(sockfd, frame, TRAME_SIZE+info->sizeInfos);
         if (n < 0) {
             perror("[server] Erreur de lecture sur le socket applicatif");
@@ -261,8 +258,8 @@ void uploadFile(int socketfd, PInfoTrame info){
     free(bufferInfo);
 
     //On ouvre le fichier
-    char * path = (char*)malloc(strlen("tests/types/")+strlen(info->infos)+1);
-    strcpy(path,"tests/types/");
+    char * path = (char*)malloc(strlen(PATH_SERVER)+strlen(info->infos)+1);
+    strcpy(path,PATH_SERVER);
     strcat(path,info->infos);
     int dataFd = open(path, O_WRONLY | O_CREAT, 0666);
     if(dataFd < 0){
@@ -320,10 +317,9 @@ void uploadFile(int socketfd, PInfoTrame info){
     char type[255];
     strcpy(type,getType(path));
     printf("[server] type du fichier %s\n",type);
-    free(path);
 
     int size;
-    char ** fileArray = fileToArray("MimeTypes.txt",&size);
+    char ** fileArray = fileToArray(PATH_SETTINGS,&size);
 
     //On inisialise la trame ACQUIT_FILE_DATA
     PInfoTrame acquitData = (PInfoTrame)malloc(sizeof(InfosTrame));
@@ -338,7 +334,10 @@ void uploadFile(int socketfd, PInfoTrame info){
     }else{
         acquitData->status = INVALID_EXTEND_FILE;
         printf("[server] type du fichier invalide\n");
+        //On supprime le fichier
+        unlink(path);
     }
+    free(path);
 
     //On encode la trame ACQUIT_FILE_DATA
     unsigned char * acquitDataFrame = encodeInfosTrame(acquitData);

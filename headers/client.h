@@ -1,5 +1,6 @@
 #ifndef CLIENT_H
 #define CLIENT_H
+#define PATH_CLIENT "data/client/"
 void clientTCP(char * hostname, long port);
 void closeConnection(int sockfd);
 char ** listFilesC(int sockfd,unsigned char * nbFiles);

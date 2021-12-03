@@ -12,8 +12,16 @@ void liste(char ** nom, unsigned char taille){
 }
 
 char * envoie(){
-    char *chemin = NULL;
+    // char * chemin= (char *) malloc(sizeof(char)*267);
+    char * chemin="data/client/";
+    char * fichier=(char *) malloc(sizeof(char)*255);
+    char * chemintot=(char *) malloc(sizeof(char)*267);
     printf("\tMerci de renseigner le chemin du fichier que vous souhaitez envoyer :\n");
+    curseur();
+    scanf("%s",fichier);
+    strcpy(chemintot,chemin);
+    chemin=strcat(chemintot, fichier);
+    //chemin=chemin+fichier;
     return chemin;
 }
 
@@ -78,8 +86,13 @@ void Affiche(int sockfd){
                 break;
             case 2:
                 ligne();
-                envoie();
+                char * chemin=malloc(sizeof(char)*267);
+                chemin=envoie();
                 ligne();
+                for(int comp=0;comp<267;comp++){
+                    printf("%c",chemin[comp]);
+                }
+                free(chemin);
                 break;
             case 3:
                 do{

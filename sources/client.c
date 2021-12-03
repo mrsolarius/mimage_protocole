@@ -50,6 +50,7 @@ void clientTCP(char * hostname, long port) {
     free(serv_addr);
     // send message to server
     sendGetAndSomthing(sockfd);
+    getFileData(sockfd,"lucas.png");
     closeConnection(sockfd);
 }
 
@@ -135,6 +136,7 @@ char ** listFilesC(int sockfd,unsigned char * nbFiles) {
 
 void getFileData(int sockfd, char * fileName) {
     // On crée la trame de demande de fichier
+    int datafd = open(fileName, O_WRONLY | O_CREAT, 0666);
     PInfoTrame infos = (PInfoTrame) malloc(sizeof(PInfoTrame));
     infos->cmd = GET_FILE_DATA;
     infos->status = SUCCESS;
@@ -156,8 +158,8 @@ void getFileData(int sockfd, char * fileName) {
         perror("ERROR pendant la lecture du socket");
         exit(1);
     }
+    printf("info info %s",infos->infos);
     // création d'un filedescriptor
-    int datafd = creat(infos->infos,S_IRWXU);
     if(datafd == -1){
         perror("ERROR pendant la création du fichier");
         exit(1);
@@ -176,18 +178,25 @@ void getFileData(int sockfd, char * fileName) {
         return;
     }
     char tampon[BUFFER_SIZE];
+    printf("sizeData %d",dataHead->sizeData);
     //Parcours du socket tant qu'on n'est pas arrivé au bout ou qu'il n'y a pas eu une erreur
     for(int i = 0;  i< dataHead->sizeData; i+=BUFFER_SIZE){
+        printf("octets lu : %d\n",dataHead->sizeData-i);
         if(i+BUFFER_SIZE > dataHead->sizeData){
             n = read(sockfd, tampon, dataHead->sizeData-i);
+            print_hex1(tampon);
+            write(datafd, tampon, dataHead->sizeData-i);
+            bzero(tampon,  BUFFER_SIZE);
         }else{
             n = read(sockfd, tampon, BUFFER_SIZE);
+            print_hex1(tampon);
+            write(datafd, tampon, BUFFER_SIZE);
+            bzero(tampon,  BUFFER_SIZE);
         }
         if(n < 0) {
             perror("ERROR pendant la lecture du socket");
             exit(1);
         }
-        write(datafd, tampon, BUFFER_SIZE);
     }
     free(bufferDataHead);
 }

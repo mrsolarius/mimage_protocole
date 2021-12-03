@@ -5,6 +5,8 @@
 #include <string.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -193,21 +195,54 @@ void downloadFileS(int sockfd, PInfoTrame info) {
     printf("[server] demande de fichier %s\n",info->infos);
     
     // open file
-    FILE * f = fopen(info->infos, "rb");
+    //concat two string
+    char * path = (char*)malloc(strlen("tests/types/")+strlen(info->infos)+1);
+    strcpy(path,"tests/types/");
+    strcat(path,info->infos);
+    FILE * f = fopen(path, "rb");
     //get size of file in bytes in size var
     fseek(f, 0, SEEK_END); // seek to end of file
     int size = ftell(f); // get current file pointer
     fseek(f, 0, SEEK_SET); // seek back to beginning of file
-    
+    int datafd = open(path, O_RDONLY);
     PDataTrame data = (PDataTrame)malloc(sizeof(DataTrame));
     data->cmd = DOWNLOAD_FILE_DATA;
     data->status = SUCCESS;
     data->sizeData = size;
-    unsigned char * truc = malloc();
-    truc = encodeDataHead(data);
-    
-
-
+    data->dataFd = datafd;
+    unsigned char * dataHead = malloc(TRAME_SIZE);
+    dataHead = encodeDataHead(data);
+    printf("zaetta\n");
+    printf("[server] envoie du fichier %d\n",data->sizeData);
+    int n2 = write(sockfd, dataHead, TRAME_SIZE);
+    if (n2 < 0) {
+        perror("ERROR pendant l'écriture du socket");
+        exit(1);
+    }
+    char tampon[BUFFER_SIZE];
+    printf("[server] envoie du fichier %d\n",data->sizeData);
+    //Parcours du socket tant qu'on n'est pas arrivé au bout ou qu'il n'y a pas eu une erreur
+    for(int i = 0;  i < data->sizeData; i+=BUFFER_SIZE){
+        printf("octets lu : %d\n",data->sizeData-i);
+        
+        if(i+BUFFER_SIZE > data->sizeData){
+            read(datafd, tampon,  data->sizeData-i);
+            print_hex_0(tampon);
+            n = write(sockfd, tampon, data->sizeData-i);
+            bzero(tampon,  data->sizeData-i);
+        }else{
+            read(datafd, tampon,  BUFFER_SIZE);
+            print_hex_0(tampon);
+            n = write(sockfd, tampon, BUFFER_SIZE);
+            bzero(tampon,  BUFFER_SIZE);
+        }
+        if(n < 0) {
+            perror("ERROR pendant l'écriture du socket");
+            exit(1);
+        }
+    }
+    free(dataHead);
+    free(data);
     free(info->infos);
     free(info);
 }

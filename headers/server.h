@@ -9,4 +9,5 @@ void listFilesS(int sockfd);
 
 void downloadFileS(int sockfd, PInfoTrame info);
 
+void uploadFile(int socketfd, PInfoTrame info);
 #endif // SERVER_H

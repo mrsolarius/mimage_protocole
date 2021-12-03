@@ -15,7 +15,7 @@
 #include "utils.h"
 void print_hex_0(const unsigned char *s)
 {
-    for(int i = 0; i < MAX_TRAME_SIZE+6; i++)
+    for(int i = 0; i < 6; i++)
         printf("%02x-", s[i]);
     
     printf("\n");
@@ -33,7 +33,6 @@ void serviceProcess(int serviceSockfd){
     while(1){
         bzero(frame, TRAME_SIZE); //bzero permet de vider le buffer et de le remplir de 0
         n = read(serviceSockfd, frame, TRAME_SIZE);
-        //print_hex_0(frame);
         if (n < 0) {
             perror("[server] Erreur de lecture sur le socket applicatif");
             exit(1);
@@ -65,6 +64,10 @@ void serviceProcess(int serviceSockfd){
             if(inf->cmd == GET_FILE_DATA){
                 printf("[server] demande de fichier\n");
                 downloadFileS(serviceSockfd, inf);
+            }
+            if(inf->cmd == UPLOAD_FILE_NAME){
+                printf("[server] demande d'envoie de fichier\n");
+                uploadFile(serviceSockfd, inf);
             }
         }
         else if(checkTypeFrame(frame) == -1){
@@ -199,12 +202,13 @@ void downloadFileS(int sockfd, PInfoTrame info) {
     char * path = (char*)malloc(strlen("tests/types/")+strlen(info->infos)+1);
     strcpy(path,"tests/types/");
     strcat(path,info->infos);
-    FILE * f = fopen(path, "rb");
-    //get size of file in bytes in size var
-    fseek(f, 0, SEEK_END); // seek to end of file
-    int size = ftell(f); // get current file pointer
-    fseek(f, 0, SEEK_SET); // seek back to beginning of file
+    
     int datafd = open(path, O_RDONLY);
+    // on stock la taille du fichier dans une variable
+    struct stat fileStat;
+    fstat(datafd, &fileStat);
+    long size = fileStat.st_size;
+
     PDataTrame data = (PDataTrame)malloc(sizeof(DataTrame));
     data->cmd = DOWNLOAD_FILE_DATA;
     data->status = SUCCESS;
@@ -243,4 +247,182 @@ void downloadFileS(int sockfd, PInfoTrame info) {
     free(data);
     free(info->infos);
     free(info);
+}
+
+void uploadFile(int socketfd, PInfoTrame info){
+    //On lit le nom du fichier dans upload file info
+    unsigned char * bufferInfo = (unsigned char*) malloc(info->sizeInfos);
+    int e = read(socketfd, bufferInfo, info->sizeInfos);
+    printf("[server] taille de fichier %d\n",info->sizeInfos);
+    if(e < 0) {
+        perror("ERROR pendant la lecture du socket");
+        exit(1);
+    }
+    decodeInfosTrame_Infos(info,bufferInfo,info->sizeInfos);
+    free(bufferInfo);
+
+    //On ouvre le fichier
+    char * path = (char*)malloc(strlen("tests/types/")+strlen(info->infos)+1);
+    strcpy(path,"tests/types/");
+    strcat(path,info->infos);
+    int dataFd = open(path, O_WRONLY | O_CREAT, 0666);
+    if(dataFd < 0){
+        perror("[server] Erreur d'ouverture/création du fichier");
+        exit(1);
+    }
+
+    //On envoie la trame Acquit File Info (sans verification pour le momment)
+    PInfoTrame acquitInf = (PInfoTrame)malloc(sizeof(InfosTrame));
+    acquitInf->cmd = ACQUIT_FILE_NAME;
+    acquitInf->status = SUCCESS;
+    acquitInf->sizeInfos = 0;
+    acquitInf->nbFiles = 0;
+    unsigned char * acquitFrame = encodeInfosTrame(acquitInf);
+    int n = write(socketfd, acquitFrame, TRAME_SIZE);
+    printf("[server] envoie acquit\n");
+    if (n < 0) {
+        perror("[server] Erreur d'écriture sur le socket applicatif");
+        exit(1);
+    }
+    free(acquitFrame);
+    free(acquitInf);
+
+    printf("[server] demande d'upload du fichier %s\n",info->infos);
+    
+    //On lit l'entête de la trame data
+    unsigned char * dataHeadFrame = malloc(TRAME_SIZE);
+    n = read(socketfd, dataHeadFrame, TRAME_SIZE);
+    PDataTrame dataHead = decodeDataHead(dataHeadFrame,dataFd);
+    printf("[server] taille du fichier à recevoir %d\n",dataHead->sizeData);
+    free(dataHeadFrame);
+
+    //On lit les données reçues et on les écrit dans le fichier
+    char tampon[BUFFER_SIZE];
+    for(int i = 0;  i< dataHead->sizeData; i+=BUFFER_SIZE){
+        printf("octets lu : %d\n",dataHead->sizeData-i);
+        if(i+BUFFER_SIZE > dataHead->sizeData){
+            n = read(socketfd, tampon, dataHead->sizeData-i);
+            write(dataHead->dataFd, tampon, dataHead->sizeData-i);
+            bzero(tampon,  BUFFER_SIZE);
+        }else{
+            n = read(socketfd, tampon, BUFFER_SIZE);
+            write(dataHead->dataFd, tampon, BUFFER_SIZE);
+            bzero(tampon,  BUFFER_SIZE);
+        }
+        if(n < 0) {
+            perror("ERROR pendant la lecture du socket");
+            exit(1);
+        }
+    }
+    free(dataHead);
+    close(dataFd);
+
+    // On verifie le type du fichier
+    char* type = getType(path);
+    printf("[server] type du fichier %s\n",type);
+    if(strcmp(type,"image/gif") == 0){
+        //Renvoyer une trame de type ACQUIT_FILE_DATA SUCCESS
+    }else{
+        //Renvoyer une trame de type ACQUIT_FILE_DATA ERROR et supprimer le fichier
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /*unsigned char * bufferInfo = (unsigned char*) malloc(info->sizeInfos);
+    int n = read(socketfd, bufferInfo, info->sizeInfos);
+    if(n < 0) {
+        perror("ERROR pendant la lecture du socket");
+        exit(1);
+    }
+    decodeInfosTrame_Infos(info,bufferInfo,info->sizeInfos);
+    printf("[server] reception de %s\n",info->infos);
+
+    //
+
+    PInfoTrame infAquital = (PInfoTrame) malloc(sizeof(PInfoTrame));
+    printf("[server] remplissage de la trame");
+    infAquital->cmd = ACQUIT_FILE_NAME;
+    infAquital->status = SUCCESS;
+    infAquital->sizeInfos = 0xff;
+    infAquital->nbFiles = 0xff;
+    unsigned char * aquitalFrame = encodeInfosTrame(infAquital);
+    printf("aquitalFrame[0] %x ACQUIT_FILE_NAME %x\n",aquitalFrame[0],ACQUIT_FILE_NAME);
+    int n2 = write(socketfd, aquitalFrame, TRAME_SIZE);
+    if (n2 < 0) {
+        perror("ERROR pendant l'écriture du socket");
+        exit(1);
+    }*/
+    /*
+    // overture du fichier
+    // on ajout au PATH !
+    char * path = (char*)malloc(strlen("tests/types/")+strlen(info->infos)+1);
+    strcpy(path,"tests/types/");
+    strcat(path,info->infos);
+    int datafd = open(path, O_WRONLY | O_CREAT, 0666);
+    free(bufferInfo);
+    // lire le socket
+    unsigned char * bufferData = (unsigned char*) malloc(TRAME_SIZE);
+    PDataTrame data = decodeDataHead(bufferData,socketfd);
+    free(bufferData);
+    printf("[server] reception du fichier %s\n",info->infos);
+    char * tampon[BUFFER_SIZE];
+    for(int i = 0;  i< data->sizeData; i+=BUFFER_SIZE){
+        printf("octets lu : %d\n",data->sizeData-i);
+        if(i+BUFFER_SIZE > data->sizeData){
+            n = read(socketfd, tampon, data->sizeData-i);
+            write(datafd, tampon, data->sizeData-i);
+            bzero(tampon,  BUFFER_SIZE);
+        }else{
+            n = read(socketfd, tampon, BUFFER_SIZE);
+            write(datafd, tampon, BUFFER_SIZE);
+            bzero(tampon,  BUFFER_SIZE);
+        }
+        if(n < 0) {
+            perror("ERROR pendant la lecture du socket");
+            exit(1);
+        }
+    }
+
+    printf("[server] aquitement de la récéption %s\n",info->infos);
+    infAquital = (PInfoTrame)malloc(sizeof(InfosTrame));
+    infAquital->cmd = ACQUIT_FILE_DATA;
+    infAquital->status = SUCCESS;
+    infAquital->sizeInfos = 0xff;
+    infAquital->nbFiles = 0xff;
+    aquitalFrame = encodeInfosTrame(infAquital);
+    n2 = write(socketfd, aquitalFrame, TRAME_SIZE);
+    if (n2 < 0) {
+        perror("ERROR pendant l'écriture du socket");
+        exit(1);
+    }*/
+    
 }

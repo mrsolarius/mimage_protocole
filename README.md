@@ -16,3 +16,5 @@ $ make test
 $ ./bin/run_tests
 ```
 
+## Documentation
+Pour consulter la documentation du projet [cliquer ici](https://github.com/mrsolarius/mimage_protocole/tree/main/doc)
